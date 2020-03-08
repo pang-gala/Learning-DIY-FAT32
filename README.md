@@ -17,6 +17,6 @@
 请访问01课堂主页:<http://01ketang.cc>。
 
 # 注意
-为了正确运行该工程，请将课程提提供的disk.img和disk_test.img放置与xfat同一目录下。
+为了正确运行该工程，请将课程提提供的disk.img和disk_test.img放置在和xfat相同的目录中。
 
 否则在运行时会提示：open xxx.img failed类似的错误！
