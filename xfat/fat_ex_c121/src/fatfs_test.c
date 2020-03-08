@@ -1,8 +1,8 @@
 /**
- * 本源码配套的课程为 - 从0到1动手写FAT32文件系统。每个例程对应一个课时，尽可能注释。
- * 作者：李述铜
- * 课程网址：http://01ketang.cc
- * 版权声明：本源码非开源，二次开发，或其它商用前请联系作者。
+ * ��Դ�����׵Ŀγ�Ϊ - ��0��1����дFAT32�ļ�ϵͳ��ÿ�����̶�Ӧһ����ʱ��������ע�͡�
+ * ���ߣ�����ͭ
+ * �γ���ַ��http://01ketang.cc
+ * ��Ȩ��������Դ��ǿ�Դ�����ο���������������ǰ����ϵ���ߡ�
  */
 #include <stdio.h>
 #include <string.h>
@@ -21,7 +21,7 @@ xdisk_t disk;
 xdisk_part_t disk_part;
 xfat_t xfat;
 
-// io测试，测试通过要注意关掉
+// io���ԣ�����ͨ��Ҫע��ص�
 int disk_io_test (void) {
     int err;
     xdisk_t disk_test;

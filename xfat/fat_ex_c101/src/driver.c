@@ -1,23 +1,23 @@
 /**
- * æœ¬æºç é…å¥—çš„è¯¾ç¨‹ä¸º - ä»0åˆ°1åŠ¨æ‰‹å†™FAT32æ–‡ä»¶ç³»ç»Ÿã€‚æ¯ä¸ªä¾‹ç¨‹å¯¹åº”ä¸€ä¸ªè¯¾æ—¶ï¼Œå°½å¯èƒ½æ³¨é‡Šã€‚
- * ä½œè€…ï¼šæè¿°é“œ
- * è¯¾ç¨‹ç½‘å€ï¼šhttp://01ketang.cc
- * ç‰ˆæƒå£°æ˜ï¼šæœ¬æºç éå¼€æºï¼ŒäºŒæ¬¡å¼€å‘ï¼Œæˆ–å…¶å®ƒå•†ç”¨å‰è¯·è”ç³»ä½œè€…ã€‚
+ * ±¾Ô´ÂëÅäÌ×µÄ¿Î³ÌÎª - ´Ó0µ½1¶¯ÊÖĞ´FAT32ÎÄ¼şÏµÍ³¡£Ã¿¸öÀı³Ì¶ÔÓ¦Ò»¸ö¿ÎÊ±£¬¾¡¿ÉÄÜ×¢ÊÍ¡£
+ * ×÷Õß£ºÀîÊöÍ­
+ * ¿Î³ÌÍøÖ·£ºhttp://01ketang.cc
+ * °æÈ¨ÉùÃ÷£º±¾Ô´Âë·Ç¿ªÔ´£¬¶ş´Î¿ª·¢£¬»òÆäËüÉÌÓÃÇ°ÇëÁªÏµ×÷Õß¡£
  */
 #include "xdisk.h"
 #include "xfat.h"
 
 /**
- * åˆå§‹åŒ–ç£ç›˜è®¾å¤‡
- * @param disk åˆå§‹åŒ–çš„è®¾å¤‡
- * @param name è®¾å¤‡çš„åç§°
+ * ³õÊ¼»¯´ÅÅÌÉè±¸
+ * @param disk ³õÊ¼»¯µÄÉè±¸
+ * @param name Éè±¸µÄÃû³Æ
  * @return
  */
 static xfat_err_t xdisk_hw_open(xdisk_t *disk, void * init_data) {
 }
 
 /**
- * å…³é—­å­˜å‚¨è®¾å¤‡
+ * ¹Ø±Õ´æ´¢Éè±¸
  * @param disk
  * @return
  */
@@ -25,29 +25,29 @@ static xfat_err_t xdisk_hw_close(xdisk_t * disk) {
 }
 
 /**
- * ä»è®¾å¤‡ä¸­è¯»å–æŒ‡å®šæ‰‡åŒºæ•°é‡çš„æ•°æ®
- * @param disk è¯»å–çš„ç£ç›˜
- * @param buffer è¯»å–æ•°æ®å­˜å‚¨çš„ç¼“å†²åŒº
- * @param start_sector è¯»å–çš„èµ·å§‹æ‰‡åŒº
- * @param count è¯»å–çš„æ‰‡åŒºæ•°é‡
+ * ´ÓÉè±¸ÖĞ¶ÁÈ¡Ö¸¶¨ÉÈÇøÊıÁ¿µÄÊı¾İ
+ * @param disk ¶ÁÈ¡µÄ´ÅÅÌ
+ * @param buffer ¶ÁÈ¡Êı¾İ´æ´¢µÄ»º³åÇø
+ * @param start_sector ¶ÁÈ¡µÄÆğÊ¼ÉÈÇø
+ * @param count ¶ÁÈ¡µÄÉÈÇøÊıÁ¿
  * @return
  */
 static xfat_err_t xdisk_hw_read_sector(xdisk_t *disk, u8_t *buffer, u32_t start_sector, u32_t count) {
 }
 
 /**
- * å‘è®¾å¤‡ä¸­å†™æŒ‡å®šçš„æ‰‡åŒºæ•°é‡çš„æ•°æ®
- * @param disk å†™å…¥çš„å­˜å‚¨è®¾å¤‡
- * @param buffer æ•°æ®æºç¼“å†²åŒº
- * @param start_sector å†™å…¥çš„èµ·å§‹æ‰‡åŒº
- * @param count å†™å…¥çš„æ‰‡åŒºæ•°
+ * ÏòÉè±¸ÖĞĞ´Ö¸¶¨µÄÉÈÇøÊıÁ¿µÄÊı¾İ
+ * @param disk Ğ´ÈëµÄ´æ´¢Éè±¸
+ * @param buffer Êı¾İÔ´»º³åÇø
+ * @param start_sector Ğ´ÈëµÄÆğÊ¼ÉÈÇø
+ * @param count Ğ´ÈëµÄÉÈÇøÊı
  * @return
  */
 static xfat_err_t xdisk_hw_write_sector(xdisk_t *disk, u8_t *buffer, u32_t start_sector, u32_t count) {
 }
 
 /**
- * è™šæ‹Ÿç£ç›˜é©±åŠ¨ç»“æ„
+ * ĞéÄâ´ÅÅÌÇı¶¯½á¹¹
  */
 xdisk_driver_t vdisk_driver = {
     .open = xdisk_hw_open,

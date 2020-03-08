@@ -1,27 +1,27 @@
 /**
- * æœ¬æºç é…å¥—çš„è¯¾ç¨‹ä¸º - ä»Ž0åˆ°1åŠ¨æ‰‹å†™FAT32æ–‡ä»¶ç³»ç»Ÿã€‚æ¯ä¸ªä¾‹ç¨‹å¯¹åº”ä¸€ä¸ªè¯¾æ—¶ï¼Œå°½å¯èƒ½æ³¨é‡Šã€‚
- * ä½œè€…ï¼šæŽè¿°é“œ
- * è¯¾ç¨‹ç½‘å€ï¼šhttp://01ketang.cc
- * ç‰ˆæƒå£°æ˜Žï¼šæœ¬æºç éžå¼€æºï¼ŒäºŒæ¬¡å¼€å‘ï¼Œæˆ–å…¶å®ƒå•†ç”¨å‰è¯·è”ç³»ä½œè€…ã€‚
+ * ±¾Ô´ÂëÅäÌ×µÄ¿Î³ÌÎª - ´Ó0µ½1¶¯ÊÖÐ´FAT32ÎÄ¼þÏµÍ³¡£Ã¿¸öÀý³Ì¶ÔÓ¦Ò»¸ö¿ÎÊ±£¬¾¡¿ÉÄÜ×¢ÊÍ¡£
+ * ×÷Õß£ºÀîÊöÍ­
+ * ¿Î³ÌÍøÖ·£ºhttp://01ketang.cc
+ * °æÈ¨ÉùÃ÷£º±¾Ô´Âë·Ç¿ªÔ´£¬¶þ´Î¿ª·¢£¬»òÆäËüÉÌÓÃÇ°ÇëÁªÏµ×÷Õß¡£
  */
 #include "xfat.h"
 #include "xdisk.h"
 
-extern u8_t temp_buffer[512];      // todo: ç¼“å­˜ä¼˜åŒ–
+extern u8_t temp_buffer[512];      // todo: »º´æÓÅ»¯
 
 /**
- * ä»Ždbrä¸­è§£æžå‡ºfatç›¸å…³é…ç½®å‚æ•°
- * @param dbr è¯»å–çš„è®¾å¤‡dbr
+ * ´ÓdbrÖÐ½âÎö³öfatÏà¹ØÅäÖÃ²ÎÊý
+ * @param dbr ¶ÁÈ¡µÄÉè±¸dbr
  * @return
  */
 static xfat_err_t parse_fat_header (xfat_t * xfat, dbr_t * dbr) {
     xdisk_part_t * xdisk_part = xfat->disk_part;
 
-    // è§£æžDBRå‚æ•°ï¼Œè§£æžå‡ºæœ‰ç”¨çš„å‚æ•°
+    // ½âÎöDBR²ÎÊý£¬½âÎö³öÓÐÓÃµÄ²ÎÊý
     xfat->fat_tbl_sectors = dbr->fat32.BPB_FATSz32;
 
-    // å¦‚æžœç¦æ­¢FATé•œåƒï¼Œåªåˆ·æ–°ä¸€ä¸ªFATè¡¨
-    // disk_part->start_blockä¸ºè¯¥åˆ†åŒºçš„ç»å¯¹ç‰©ç†æ‰‡åŒºå·ï¼Œæ‰€ä»¥ä¸éœ€è¦å†åŠ ä¸ŠHidden_sector
+    // Èç¹û½ûÖ¹FAT¾µÏñ£¬Ö»Ë¢ÐÂÒ»¸öFAT±í
+    // disk_part->start_blockÎª¸Ã·ÖÇøµÄ¾ø¶ÔÎïÀíÉÈÇøºÅ£¬ËùÒÔ²»ÐèÒªÔÙ¼ÓÉÏHidden_sector
     if (dbr->fat32.BPB_ExtFlags & (1 << 7)) {
         u32_t table = dbr->fat32.BPB_ExtFlags & 0xF;
         xfat->fat_start_sector = dbr->bpb.BPB_RsvdSecCnt + xdisk_part->start_sector + table * xfat->fat_tbl_sectors;
@@ -37,9 +37,9 @@ static xfat_err_t parse_fat_header (xfat_t * xfat, dbr_t * dbr) {
 }
 
 /**
- * åˆå§‹åŒ–FATé¡¹
- * @param xfat xfatç»“æž„
- * @param disk_part åˆ†åŒºç»“æž„
+ * ³õÊ¼»¯FATÏî
+ * @param xfat xfat½á¹¹
+ * @param disk_part ·ÖÇø½á¹¹
  * @return
  */
 xfat_err_t xfat_open(xfat_t * xfat, xdisk_part_t * xdisk_part) {
@@ -49,13 +49,13 @@ xfat_err_t xfat_open(xfat_t * xfat, xdisk_part_t * xdisk_part) {
 
     xfat->disk_part = xdisk_part;
 
-    // è¯»å–dbrå‚æ•°åŒº
+    // ¶ÁÈ¡dbr²ÎÊýÇø
     err = xdisk_read_sector(xdisk, (u8_t *) dbr, xdisk_part->start_sector, 1);
     if (err < 0) {
         return err;
     }
 
-    // è§£æždbrå‚æ•°ä¸­çš„fatç›¸å…³ä¿¡æ¯
+    // ½âÎödbr²ÎÊýÖÐµÄfatÏà¹ØÐÅÏ¢
     err = parse_fat_header(xfat, dbr);
     if (err < 0) {
         return err;

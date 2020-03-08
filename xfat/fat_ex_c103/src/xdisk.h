@@ -1,19 +1,19 @@
 /**
- * æœ¬æºç é…å¥—çš„è¯¾ç¨‹ä¸º - ä»0åˆ°1åŠ¨æ‰‹å†™FAT32æ–‡ä»¶ç³»ç»Ÿã€‚æ¯ä¸ªä¾‹ç¨‹å¯¹åº”ä¸€ä¸ªè¯¾æ—¶ï¼Œå°½å¯èƒ½æ³¨é‡Šã€‚
- * ä½œè€…ï¼šæè¿°é“œ
- * è¯¾ç¨‹ç½‘å€ï¼šhttp://01ketang.cc
- * ç‰ˆæƒå£°æ˜ï¼šæœ¬æºç éå¼€æºï¼ŒäºŒæ¬¡å¼€å‘ï¼Œæˆ–å…¶å®ƒå•†ç”¨å‰è¯·è”ç³»ä½œè€…ã€‚
+ * ±¾Ô´ÂëÅäÌ×µÄ¿Î³ÌÎª - ´Ó0µ½1¶¯ÊÖĞ´FAT32ÎÄ¼şÏµÍ³¡£Ã¿¸öÀı³Ì¶ÔÓ¦Ò»¸ö¿ÎÊ±£¬¾¡¿ÉÄÜ×¢ÊÍ¡£
+ * ×÷Õß£ºÀîÊöÍ­
+ * ¿Î³ÌÍøÖ·£ºhttp://01ketang.cc
+ * °æÈ¨ÉùÃ÷£º±¾Ô´Âë·Ç¿ªÔ´£¬¶ş´Î¿ª·¢£¬»òÆäËüÉÌÓÃÇ°ÇëÁªÏµ×÷Õß¡£
  */
 #ifndef XDISK_H
 #define	XDISK_H
 
 #include "xtypes.h"
 
-// ç›¸å…³å‰ç½®å£°æ˜
+// Ïà¹ØÇ°ÖÃÉùÃ÷
 struct _xdisk_t;
 
 /**
- * ç£ç›˜é©±åŠ¨æ¥å£
+ * ´ÅÅÌÇı¶¯½Ó¿Ú
  */
 typedef struct _xdisk_driver_t {
     xfat_err_t (*open) (struct _xdisk_t * disk, void * init_data);
@@ -23,14 +23,14 @@ typedef struct _xdisk_driver_t {
 }xdisk_driver_t;
 
 /**
- * å­˜å‚¨è®¾å¤‡ç±»å‹
+ * ´æ´¢Éè±¸ÀàĞÍ
  */
 typedef struct _xdisk_t {
-    const char * name;              // è®¾å¤‡åç§°
-    u32_t sector_size;              // å—å¤§å°
-	u32_t total_sector;             // æ€»çš„å—æ•°é‡
-    xdisk_driver_t * driver;        // é©±åŠ¨æ¥å£
-    void * data;                    // è®¾å¤‡è‡ªå®šä¹‰å‚æ•°
+    const char * name;              // Éè±¸Ãû³Æ
+    u32_t sector_size;              // ¿é´óĞ¡
+	u32_t total_sector;             // ×ÜµÄ¿éÊıÁ¿
+    xdisk_driver_t * driver;        // Çı¶¯½Ó¿Ú
+    void * data;                    // Éè±¸×Ô¶¨Òå²ÎÊı
 }xdisk_t;
 
 xfat_err_t xdisk_open(xdisk_t *disk, const char * name, xdisk_driver_t * driver, void * init_data);

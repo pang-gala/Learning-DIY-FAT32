@@ -1,8 +1,8 @@
 /**
- * æœ¬æºç é…å¥—çš„è¯¾ç¨‹ä¸º - ä»0åˆ°1åŠ¨æ‰‹å†™FAT32æ–‡ä»¶ç³»ç»Ÿã€‚æ¯ä¸ªä¾‹ç¨‹å¯¹åº”ä¸€ä¸ªè¯¾æ—¶ï¼Œå°½å¯èƒ½æ³¨é‡Šã€‚
- * ä½œè€…ï¼šæè¿°é“œ
- * è¯¾ç¨‹ç½‘å€ï¼šhttp://01ketang.cc
- * ç‰ˆæƒå£°æ˜ï¼šæœ¬æºç éå¼€æºï¼ŒäºŒæ¬¡å¼€å‘ï¼Œæˆ–å…¶å®ƒå•†ç”¨å‰è¯·è”ç³»ä½œè€…ã€‚
+ * ±¾Ô´ÂëÅäÌ×µÄ¿Î³ÌÎª - ´Ó0µ½1¶¯ÊÖĞ´FAT32ÎÄ¼şÏµÍ³¡£Ã¿¸öÀı³Ì¶ÔÓ¦Ò»¸ö¿ÎÊ±£¬¾¡¿ÉÄÜ×¢ÊÍ¡£
+ * ×÷Õß£ºÀîÊöÍ­
+ * ¿Î³ÌÍøÖ·£ºhttp://01ketang.cc
+ * °æÈ¨ÉùÃ÷£º±¾Ô´Âë·Ç¿ªÔ´£¬¶ş´Î¿ª·¢£¬»òÆäËüÉÌÓÃÇ°ÇëÁªÏµ×÷Õß¡£
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,7 +22,7 @@ xdisk_t disk;
 xdisk_part_t disk_part;
 xfat_t xfat;
 
-// ioæµ‹è¯•ï¼Œæµ‹è¯•é€šè¿‡è¦æ³¨æ„å…³æ‰
+// io²âÊÔ£¬²âÊÔÍ¨¹ıÒª×¢Òâ¹Øµô
 int disk_io_test (void) {
     int err;
     xdisk_t disk_test;
@@ -162,7 +162,7 @@ int fat_dir_test(void) {
 
     culster_buffer = (u8_t *)malloc(xfat.cluster_byte_size);
 
-    // è§£ææ ¹ç›®å½•æ‰€åœ¨çš„ç°‡
+    // ½âÎö¸ùÄ¿Â¼ËùÔÚµÄ´Ø
     curr_cluster = xfat.root_cluster;
     while (is_cluster_valid(curr_cluster)) {
         err = read_cluster(&xfat, culster_buffer, curr_cluster, 1);
@@ -187,7 +187,7 @@ int fat_dir_test(void) {
 
         err = get_next_cluster(&xfat, curr_cluster, &curr_cluster);
         if (err) {
-            printf("get next cluster failedï¼Œ current cluster %d\n", curr_cluster);
+            printf("get next cluster failed£¬ current cluster %d\n", curr_cluster);
             return -1;
         }
     }
@@ -205,7 +205,7 @@ int fat_file_test(void) {
 
     culster_buffer = (u8_t *)malloc(xfat.cluster_byte_size + 1);
 
-    // ä»fat_dir_testé€‰æ‹©1ä¸ªæ–‡ä»¶çš„clusterèµ·å§‹å·ï¼Œæ ¹æ®æµ‹è¯•æƒ…å†µä¿®æ”¹
+    // ´Ófat_dir_testÑ¡Ôñ1¸öÎÄ¼şµÄclusterÆğÊ¼ºÅ£¬¸ù¾İ²âÊÔÇé¿öĞŞ¸Ä
     curr_cluster = 4565;    // 62.txt
     while (is_cluster_valid(curr_cluster)) {
         err = read_cluster(&xfat, culster_buffer, curr_cluster, 1);
@@ -221,7 +221,7 @@ int fat_file_test(void) {
         size += xfat.cluster_byte_size;
         err = get_next_cluster(&xfat, curr_cluster, &curr_cluster);
         if (err) {
-            printf("get next cluster failedï¼Œ current cluster %d\n", curr_cluster);
+            printf("get next cluster failed£¬ current cluster %d\n", curr_cluster);
             return -1;
         }
     }
@@ -271,7 +271,7 @@ int dir_trans_test(void) {
 
     printf("\ntrans dir test!\n");
 
-    // ä»…éå†æ ¹ç›®å½•ä¸‹é¢çš„è¿™ä¸€å±‚
+    // ½ö±éÀú¸ùÄ¿Â¼ÏÂÃæµÄÕâÒ»²ã
     err = xfile_open(&xfat, &top_dir, "/");
     if (err < 0) {
         printf("open directory failed!\n");
@@ -305,7 +305,7 @@ int dir_trans_test(void) {
 
 int fs_open_test (void) {
     const char * not_exist_path = "/file_not_exist.txt";
-    const char * exist_path = "/12345678ABC";    // æ³¨æ„ï¼šæ–‡ä»¶åè¦å¤§å†™
+    const char * exist_path = "/12345678ABC";    // ×¢Òâ£ºÎÄ¼şÃûÒª´óĞ´
     const char * file1 = "/open/file.txt";
     const char * file2 = "/open/a0/a1/a2/a3/a4/a5/a6/a7/a8/a9/a10/a11/a12/a13/a14/a15/a16/a17/a18/a19/file.txt";
     xfat_err_t err;

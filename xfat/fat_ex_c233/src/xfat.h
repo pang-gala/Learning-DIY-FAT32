@@ -1,8 +1,8 @@
 /**
- * æœ¬æºç é…å¥—çš„è¯¾ç¨‹ä¸º - ä»0åˆ°1åŠ¨æ‰‹å†™FAT32æ–‡ä»¶ç³»ç»Ÿã€‚æ¯ä¸ªä¾‹ç¨‹å¯¹åº”ä¸€ä¸ªè¯¾æ—¶ï¼Œå°½å¯èƒ½æ³¨é‡Šã€‚
- * ä½œè€…ï¼šæè¿°é“œ
- * è¯¾ç¨‹ç½‘å€ï¼šhttp://01ketang.cc
- * ç‰ˆæƒå£°æ˜ï¼šæœ¬æºç éå¼€æºï¼ŒäºŒæ¬¡å¼€å‘ï¼Œæˆ–å…¶å®ƒå•†ç”¨å‰è¯·è”ç³»ä½œè€…ã€‚
+ * ±¾Ô´ÂëÅäÌ×µÄ¿Î³ÌÎª - ´Ó0µ½1¶¯ÊÖĞ´FAT32ÎÄ¼şÏµÍ³¡£Ã¿¸öÀı³Ì¶ÔÓ¦Ò»¸ö¿ÎÊ±£¬¾¡¿ÉÄÜ×¢ÊÍ¡£
+ * ×÷Õß£ºÀîÊöÍ­
+ * ¿Î³ÌÍøÖ·£ºhttp://01ketang.cc
+ * °æÈ¨ÉùÃ÷£º±¾Ô´Âë·Ç¿ªÔ´£¬¶ş´Î¿ª·¢£¬»òÆäËüÉÌÓÃÇ°ÇëÁªÏµ×÷Õß¡£
  */
 #ifndef XFAT_H
 #define XFAT_H
@@ -13,112 +13,112 @@
 #pragma pack(1)
 
 /**
- * FATæ–‡ä»¶ç³»ç»Ÿçš„BPBç»“æ„
+ * FATÎÄ¼şÏµÍ³µÄBPB½á¹¹
  */
 typedef struct _bpb_t {
-    u8_t BS_jmpBoot[3];                 // è·³è½¬ä»£ç 
-    u8_t BS_OEMName[8];                 // OEMåç§°
-    u16_t BPB_BytsPerSec;               // æ¯æ‰‡åŒºå­—èŠ‚æ•°
-    u8_t BPB_SecPerClus;                // æ¯ç°‡æ‰‡åŒºæ•°
-    u16_t BPB_RsvdSecCnt;               // ä¿ç•™åŒºæ‰‡åŒºæ•°
-    u8_t BPB_NumFATs;                   // FATè¡¨é¡¹æ•°
-    u16_t BPB_RootEntCnt;               // æ ¹ç›®å½•é¡¹ç›®æ•°
-    u16_t BPB_TotSec16;                 // æ€»çš„æ‰‡åŒºæ•°
-    u8_t BPB_Media;                     // åª’ä½“ç±»å‹
-    u16_t BPB_FATSz16;                  // FATè¡¨é¡¹å¤§å°
-    u16_t BPB_SecPerTrk;                // æ¯ç£é“æ‰‡åŒºæ•°
-    u16_t BPB_NumHeads;                 // ç£å¤´æ•°
-    u32_t BPB_HiddSec;                  // éšè—æ‰‡åŒºæ•°
-    u32_t BPB_TotSec32;                 // æ€»çš„æ‰‡åŒºæ•°
+    u8_t BS_jmpBoot[3];                 // Ìø×ª´úÂë
+    u8_t BS_OEMName[8];                 // OEMÃû³Æ
+    u16_t BPB_BytsPerSec;               // Ã¿ÉÈÇø×Ö½ÚÊı
+    u8_t BPB_SecPerClus;                // Ã¿´ØÉÈÇøÊı
+    u16_t BPB_RsvdSecCnt;               // ±£ÁôÇøÉÈÇøÊı
+    u8_t BPB_NumFATs;                   // FAT±íÏîÊı
+    u16_t BPB_RootEntCnt;               // ¸ùÄ¿Â¼ÏîÄ¿Êı
+    u16_t BPB_TotSec16;                 // ×ÜµÄÉÈÇøÊı
+    u8_t BPB_Media;                     // Ã½ÌåÀàĞÍ
+    u16_t BPB_FATSz16;                  // FAT±íÏî´óĞ¡
+    u16_t BPB_SecPerTrk;                // Ã¿´ÅµÀÉÈÇøÊı
+    u16_t BPB_NumHeads;                 // ´ÅÍ·Êı
+    u32_t BPB_HiddSec;                  // Òş²ØÉÈÇøÊı
+    u32_t BPB_TotSec32;                 // ×ÜµÄÉÈÇøÊı
 } bpb_t;
 
 /**
- * BPBä¸­çš„FAT32ç»“æ„
+ * BPBÖĞµÄFAT32½á¹¹
  */
 typedef struct _fat32_hdr_t {
-    u32_t BPB_FATSz32;                  // FATè¡¨çš„å­—èŠ‚å¤§å°
-    u16_t BPB_ExtFlags;                 // æ‰©å±•æ ‡è®°
-    u16_t BPB_FSVer;                    // ç‰ˆæœ¬å·
-    u32_t BPB_RootClus;                 // æ ¹ç›®å½•çš„ç°‡å·
-    u16_t BPB_FsInfo;                   // fsInfoçš„æ‰‡åŒºå·
-    u16_t BPB_BkBootSec;                // å¤‡ä»½æ‰‡åŒº
+    u32_t BPB_FATSz32;                  // FAT±íµÄ×Ö½Ú´óĞ¡
+    u16_t BPB_ExtFlags;                 // À©Õ¹±ê¼Ç
+    u16_t BPB_FSVer;                    // °æ±¾ºÅ
+    u32_t BPB_RootClus;                 // ¸ùÄ¿Â¼µÄ´ØºÅ
+    u16_t BPB_FsInfo;                   // fsInfoµÄÉÈÇøºÅ
+    u16_t BPB_BkBootSec;                // ±¸·İÉÈÇø
     u8_t BPB_Reserved[12];
-    u8_t BS_DrvNum;                     // è®¾å¤‡å·
+    u8_t BS_DrvNum;                     // Éè±¸ºÅ
     u8_t BS_Reserved1;
-    u8_t BS_BootSig;                    // æ‰©å±•æ ‡è®°
-    u32_t BS_VolID;                     // å·åºåˆ—å·
-    u8_t BS_VolLab[11];                 // å·æ ‡åç§°
-    u8_t BS_FileSysType[8];             // æ–‡ä»¶ç±»å‹åç§°
+    u8_t BS_BootSig;                    // À©Õ¹±ê¼Ç
+    u32_t BS_VolID;                     // ¾íĞòÁĞºÅ
+    u8_t BS_VolLab[11];                 // ¾í±êÃû³Æ
+    u8_t BS_FileSysType[8];             // ÎÄ¼şÀàĞÍÃû³Æ
 } fat32_hdr_t;
 
 /**
- * å®Œæ•´çš„DBRç±»å‹
+ * ÍêÕûµÄDBRÀàĞÍ
  */
 typedef struct _dbr_t {
-    bpb_t bpb;                          // BPBç»“æ„
-    fat32_hdr_t fat32;                  // FAT32ç»“æ„
+    bpb_t bpb;                          // BPB½á¹¹
+    fat32_hdr_t fat32;                  // FAT32½á¹¹
 } dbr_t;
 
-#define CLUSTER_INVALID                 0x0FFFFFFF          // æ— æ•ˆçš„ç°‡å·
+#define CLUSTER_INVALID                 0x0FFFFFFF          // ÎŞĞ§µÄ´ØºÅ
 
-#define DIRITEM_NAME_FREE               0xE5                // ç›®å½•é¡¹ç©ºé—²åæ ‡è®°
-#define DIRITEM_NAME_END                0x00                // ç›®å½•é¡¹ç»“æŸåæ ‡è®°
+#define DIRITEM_NAME_FREE               0xE5                // Ä¿Â¼Ïî¿ÕÏĞÃû±ê¼Ç
+#define DIRITEM_NAME_END                0x00                // Ä¿Â¼Ïî½áÊøÃû±ê¼Ç
 
-#define DIRITEM_NTRES_BODY_LOWER        0x08                // æ–‡ä»¶åå°å†™
-#define DIRITEM_NTRES_EXT_LOWER         0x10                // æ‰©å±•åå°å†™
+#define DIRITEM_NTRES_BODY_LOWER        0x08                // ÎÄ¼şÃûĞ¡Ğ´
+#define DIRITEM_NTRES_EXT_LOWER         0x10                // À©Õ¹ÃûĞ¡Ğ´
 
-#define DIRITEM_ATTR_READ_ONLY          0x01                // ç›®å½•é¡¹å±æ€§ï¼šåªè¯»
-#define DIRITEM_ATTR_HIDDEN             0x02                // ç›®å½•é¡¹å±æ€§ï¼šéšè—
-#define DIRITEM_ATTR_SYSTEM             0x04                // ç›®å½•é¡¹å±æ€§ï¼šç³»ç»Ÿç±»å‹
-#define DIRITEM_ATTR_VOLUME_ID          0x08                // ç›®å½•é¡¹å±æ€§ï¼šå·id
-#define DIRITEM_ATTR_DIRECTORY          0x10                // ç›®å½•é¡¹å±æ€§ï¼šç›®å½•
-#define DIRITEM_ATTR_ARCHIVE            0x20                // ç›®å½•é¡¹å±æ€§ï¼šå½’æ¡£
-#define DIRITEM_ATTR_LONG_NAME          0x0F                // ç›®å½•é¡¹å±æ€§ï¼šé•¿æ–‡ä»¶å
+#define DIRITEM_ATTR_READ_ONLY          0x01                // Ä¿Â¼ÏîÊôĞÔ£ºÖ»¶Á
+#define DIRITEM_ATTR_HIDDEN             0x02                // Ä¿Â¼ÏîÊôĞÔ£ºÒş²Ø
+#define DIRITEM_ATTR_SYSTEM             0x04                // Ä¿Â¼ÏîÊôĞÔ£ºÏµÍ³ÀàĞÍ
+#define DIRITEM_ATTR_VOLUME_ID          0x08                // Ä¿Â¼ÏîÊôĞÔ£º¾íid
+#define DIRITEM_ATTR_DIRECTORY          0x10                // Ä¿Â¼ÏîÊôĞÔ£ºÄ¿Â¼
+#define DIRITEM_ATTR_ARCHIVE            0x20                // Ä¿Â¼ÏîÊôĞÔ£º¹éµµ
+#define DIRITEM_ATTR_LONG_NAME          0x0F                // Ä¿Â¼ÏîÊôĞÔ£º³¤ÎÄ¼şÃû
 
 /**
- * FATç›®å½•é¡¹çš„æ—¥æœŸç±»å‹
+ * FATÄ¿Â¼ÏîµÄÈÕÆÚÀàĞÍ
  */
 typedef struct _diritem_date_t {
-    u16_t day : 5;                  // æ—¥
-    u16_t month : 4;                // æœˆ
-    u16_t year_from_1980 : 7;       // å¹´
+    u16_t day : 5;                  // ÈÕ
+    u16_t month : 4;                // ÔÂ
+    u16_t year_from_1980 : 7;       // Äê
 } diritem_date_t;
 
 /**
- * FATç›®å½•é¡¹çš„æ—¶é—´ç±»å‹
+ * FATÄ¿Â¼ÏîµÄÊ±¼äÀàĞÍ
  */
 typedef struct _diritem_time_t {
-    u16_t second_2 : 5;             // 2ç§’
-    u16_t minute : 6;               // åˆ†
-    u16_t hour : 5;                 // æ—¶
+    u16_t second_2 : 5;             // 2Ãë
+    u16_t minute : 6;               // ·Ö
+    u16_t hour : 5;                 // Ê±
 } diritem_time_t;
 
 /**
- * FATç›®å½•é¡¹
+ * FATÄ¿Â¼Ïî
  */
 typedef struct _diritem_t {
-    u8_t DIR_Name[8];                   // æ–‡ä»¶å
-    u8_t DIR_ExtName[3];                // æ‰©å±•å
-    u8_t DIR_Attr;                      // å±æ€§
+    u8_t DIR_Name[8];                   // ÎÄ¼şÃû
+    u8_t DIR_ExtName[3];                // À©Õ¹Ãû
+    u8_t DIR_Attr;                      // ÊôĞÔ
     u8_t DIR_NTRes;
-    u8_t DIR_CrtTimeTeenth;             // åˆ›å»ºæ—¶é—´çš„æ¯«ç§’
-    diritem_time_t DIR_CrtTime;         // åˆ›å»ºæ—¶é—´
-    diritem_date_t DIR_CrtDate;         // åˆ›å»ºæ—¥æœŸ
-    diritem_date_t DIR_LastAccDate;     // æœ€åè®¿é—®æ—¥æœŸ
-    u16_t DIR_FstClusHI;                // ç°‡å·é«˜16ä½
-    diritem_time_t DIR_WrtTime;         // ä¿®æ”¹æ—¶é—´
-    diritem_date_t DIR_WrtDate;         // ä¿®æ”¹æ—¶æœŸ
-    u16_t DIR_FstClusL0;                // ç°‡å·ä½16ä½
-    u32_t DIR_FileSize;                 // æ–‡ä»¶å­—èŠ‚å¤§å°
+    u8_t DIR_CrtTimeTeenth;             // ´´½¨Ê±¼äµÄºÁÃë
+    diritem_time_t DIR_CrtTime;         // ´´½¨Ê±¼ä
+    diritem_date_t DIR_CrtDate;         // ´´½¨ÈÕÆÚ
+    diritem_date_t DIR_LastAccDate;     // ×îºó·ÃÎÊÈÕÆÚ
+    u16_t DIR_FstClusHI;                // ´ØºÅ¸ß16Î»
+    diritem_time_t DIR_WrtTime;         // ĞŞ¸ÄÊ±¼ä
+    diritem_date_t DIR_WrtDate;         // ĞŞ¸ÄÊ±ÆÚ
+    u16_t DIR_FstClusL0;                // ´ØºÅµÍ16Î»
+    u32_t DIR_FileSize;                 // ÎÄ¼ş×Ö½Ú´óĞ¡
 } diritem_t;
 
 /**
- * ç°‡ç±»å‹
+ * ´ØÀàĞÍ
  */
 typedef union _cluster32_t {
     struct {
-        u32_t next : 28;                // ä¸‹ä¸€ç°‡
-        u32_t reserved : 4;             // ä¿ç•™ï¼Œä¸º0
+        u32_t next : 28;                // ÏÂÒ»´Ø
+        u32_t reserved : 4;             // ±£Áô£¬Îª0
     } s;
     u32_t v;
 } cluster32_t;
@@ -126,23 +126,23 @@ typedef union _cluster32_t {
 #pragma pack()
 
 /**
- * xfatç»“æ„
+ * xfat½á¹¹
  */
 typedef struct _xfat_t {
-    u32_t fat_start_sector;             // FATè¡¨èµ·å§‹æ‰‡åŒº
-    u32_t fat_tbl_nr;                   // FATè¡¨æ•°é‡
-    u32_t fat_tbl_sectors;              // æ¯ä¸ªFATè¡¨çš„æ‰‡åŒºæ•°
-    u32_t sec_per_cluster;              // æ¯ç°‡çš„æ‰‡åŒºæ•°
-    u32_t root_cluster;                 // æ ¹ç›®å½•çš„æ‰‡åŒºå·
-    u32_t cluster_byte_size;            // æ¯ç°‡å­—èŠ‚æ•°
-    u32_t total_sectors;                // æ€»æ‰‡åŒºæ•°
+    u32_t fat_start_sector;             // FAT±íÆğÊ¼ÉÈÇø
+    u32_t fat_tbl_nr;                   // FAT±íÊıÁ¿
+    u32_t fat_tbl_sectors;              // Ã¿¸öFAT±íµÄÉÈÇøÊı
+    u32_t sec_per_cluster;              // Ã¿´ØµÄÉÈÇøÊı
+    u32_t root_cluster;                 // ¸ùÄ¿Â¼µÄÉÈÇøºÅ
+    u32_t cluster_byte_size;            // Ã¿´Ø×Ö½ÚÊı
+    u32_t total_sectors;                // ×ÜÉÈÇøÊı
 
-    u8_t * fat_buffer;             // FATè¡¨é¡¹ç¼“å†²
-    xdisk_part_t * disk_part;           // å¯¹åº”çš„åˆ†åŒºä¿¡æ¯
+    u8_t * fat_buffer;             // FAT±íÏî»º³å
+    xdisk_part_t * disk_part;           // ¶ÔÓ¦µÄ·ÖÇøĞÅÏ¢
 } xfat_t;
 
 /**
- * æ—¶é—´æè¿°ç»“æ„
+ * Ê±¼äÃèÊö½á¹¹
  */
 typedef struct _xfile_time_t {
     u16_t year;
@@ -154,7 +154,7 @@ typedef struct _xfile_time_t {
 }xfile_time_t;
 
 /**
- * æ–‡ä»¶ç±»å‹
+ * ÎÄ¼şÀàĞÍ
  */
 typedef enum _xfile_type_t {
     FAT_DIR,
@@ -162,37 +162,37 @@ typedef enum _xfile_type_t {
     FAT_VOL,
 } xfile_type_t;
 
-#define SFN_LEN                     11              // sfnæ–‡ä»¶åé•¿
+#define SFN_LEN                     11              // sfnÎÄ¼şÃû³¤
 
 /**
- * æ–‡ä»¶ä¿¡æ¯ç»“æ„
+ * ÎÄ¼şĞÅÏ¢½á¹¹
  */
 typedef struct _xfileinfo_t {
 #define X_FILEINFO_NAME_SIZE        32
-    char file_name[X_FILEINFO_NAME_SIZE];       // æ–‡ä»¶å
+    char file_name[X_FILEINFO_NAME_SIZE];       // ÎÄ¼şÃû
 
-    u32_t size;                                 // æ–‡ä»¶å­—èŠ‚å¤§å°
-    u16_t attr;                                 // æ–‡ä»¶å±æ€§
-    xfile_type_t type;                          // æ–‡ä»¶ç±»å‹
-    xfile_time_t create_time;                       // åˆ›å»ºæ—¶é—´
-    xfile_time_t last_acctime;                      // æœ€åè®¿é—®æ—¶é—´
-    xfile_time_t modify_time;                       // æœ€åä¿®æ”¹æ—¶é—´
+    u32_t size;                                 // ÎÄ¼ş×Ö½Ú´óĞ¡
+    u16_t attr;                                 // ÎÄ¼şÊôĞÔ
+    xfile_type_t type;                          // ÎÄ¼şÀàĞÍ
+    xfile_time_t create_time;                       // ´´½¨Ê±¼ä
+    xfile_time_t last_acctime;                      // ×îºó·ÃÎÊÊ±¼ä
+    xfile_time_t modify_time;                       // ×îºóĞŞ¸ÄÊ±¼ä
 } xfileinfo_t;
 
 /**
- * æ–‡ä»¶ç±»å‹
+ * ÎÄ¼şÀàĞÍ
  */
 typedef struct _xfile_t {
-    xfat_t *xfat;                   // å¯¹åº”çš„xfatç»“æ„
+    xfat_t *xfat;                   // ¶ÔÓ¦µÄxfat½á¹¹
 
-    u32_t size;                     // æ–‡ä»¶å¤§å°
-    u16_t attr;                     // æ–‡ä»¶å±æ€§
-    xfile_type_t type;              // æ–‡ä»¶ç±»å‹
-    u32_t pos;                      // å½“å‰ä½ç½®
-    xfat_err_t err;                  // ä¸Šä¸€æ¬¡çš„æ“ä½œé”™è¯¯ç 
+    u32_t size;                     // ÎÄ¼ş´óĞ¡
+    u16_t attr;                     // ÎÄ¼şÊôĞÔ
+    xfile_type_t type;              // ÎÄ¼şÀàĞÍ
+    u32_t pos;                      // µ±Ç°Î»ÖÃ
+    xfat_err_t err;                  // ÉÏÒ»´ÎµÄ²Ù×÷´íÎóÂë
 
-    u32_t start_cluster;            // æ•°æ®åŒºèµ·å§‹ç°‡å·
-    u32_t curr_cluster;             // å½“å‰ç°‡å·
+    u32_t start_cluster;            // Êı¾İÇøÆğÊ¼´ØºÅ
+    u32_t curr_cluster;             // µ±Ç°´ØºÅ
 } xfile_t;
 
 xfat_err_t is_cluster_valid(u32_t cluster);

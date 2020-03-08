@@ -1,8 +1,8 @@
 /**
- * æœ¬æºç é…å¥—çš„è¯¾ç¨‹ä¸º - ä»0åˆ°1åŠ¨æ‰‹å†™FAT32æ–‡ä»¶ç³»ç»Ÿã€‚æ¯ä¸ªä¾‹ç¨‹å¯¹åº”ä¸€ä¸ªè¯¾æ—¶ï¼Œå°½å¯èƒ½æ³¨é‡Šã€‚
- * ä½œè€…ï¼šæè¿°é“œ
- * è¯¾ç¨‹ç½‘å€ï¼šhttp://01ketang.cc
- * ç‰ˆæƒå£°æ˜ï¼šæœ¬æºç éå¼€æºï¼ŒäºŒæ¬¡å¼€å‘ï¼Œæˆ–å…¶å®ƒå•†ç”¨å‰è¯·è”ç³»ä½œè€…ã€‚
+ * ±¾Ô´ÂëÅäÌ×µÄ¿Î³ÌÎª - ´Ó0µ½1¶¯ÊÖĞ´FAT32ÎÄ¼şÏµÍ³¡£Ã¿¸öÀı³Ì¶ÔÓ¦Ò»¸ö¿ÎÊ±£¬¾¡¿ÉÄÜ×¢ÊÍ¡£
+ * ×÷Õß£ºÀîÊöÍ­
+ * ¿Î³ÌÍøÖ·£ºhttp://01ketang.cc
+ * °æÈ¨ÉùÃ÷£º±¾Ô´Âë·Ç¿ªÔ´£¬¶ş´Î¿ª·¢£¬»òÆäËüÉÌÓÃÇ°ÇëÁªÏµ×÷Õß¡£
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,7 +22,7 @@ xdisk_t disk;
 xdisk_part_t disk_part;
 xfat_t xfat;
 
-// ioæµ‹è¯•ï¼Œæµ‹è¯•é€šè¿‡è¦æ³¨æ„å…³æ‰
+// io²âÊÔ£¬²âÊÔÍ¨¹ıÒª×¢Òâ¹Øµô
 int disk_io_test (void) {
     int err;
     xdisk_t disk_test;
@@ -162,7 +162,7 @@ int fat_dir_test(void) {
 
     culster_buffer = (u8_t *)malloc(xfat.cluster_byte_size);
 
-    // è§£ææ ¹ç›®å½•æ‰€åœ¨çš„ç°‡
+    // ½âÎö¸ùÄ¿Â¼ËùÔÚµÄ´Ø
     curr_cluster = xfat.root_cluster;
     while (is_cluster_valid(curr_cluster)) {
         err = read_cluster(&xfat, culster_buffer, curr_cluster, 1);
@@ -187,7 +187,7 @@ int fat_dir_test(void) {
 
         err = get_next_cluster(&xfat, curr_cluster, &curr_cluster);
         if (err) {
-            printf("get next cluster failedï¼Œ current cluster %d\n", curr_cluster);
+            printf("get next cluster failed£¬ current cluster %d\n", curr_cluster);
             return -1;
         }
     }
@@ -205,7 +205,7 @@ int fat_file_test(void) {
 
     culster_buffer = (u8_t *)malloc(xfat.cluster_byte_size + 1);
 
-    // ä»fat_dir_testé€‰æ‹©1ä¸ªæ–‡ä»¶çš„clusterèµ·å§‹å·ï¼Œæ ¹æ®æµ‹è¯•æƒ…å†µä¿®æ”¹
+    // ´Ófat_dir_testÑ¡Ôñ1¸öÎÄ¼şµÄclusterÆğÊ¼ºÅ£¬¸ù¾İ²âÊÔÇé¿öĞŞ¸Ä
     curr_cluster = 4565;    // 62.txt
     while (is_cluster_valid(curr_cluster)) {
         err = read_cluster(&xfat, culster_buffer, curr_cluster, 1);
@@ -221,7 +221,7 @@ int fat_file_test(void) {
         size += xfat.cluster_byte_size;
         err = get_next_cluster(&xfat, curr_cluster, &curr_cluster);
         if (err) {
-            printf("get next cluster failedï¼Œ current cluster %d\n", curr_cluster);
+            printf("get next cluster failed£¬ current cluster %d\n", curr_cluster);
             return -1;
         }
     }
@@ -309,7 +309,7 @@ int dir_trans_test(void) {
 
     printf("\ntrans dir test!\n");
 
-    // ä»…éå†æ ¹ç›®å½•ä¸‹é¢çš„è¿™ä¸€å±‚
+    // ½ö±éÀú¸ùÄ¿Â¼ÏÂÃæµÄÕâÒ»²ã
     err = xfile_open(&xfat, &top_dir, "/read/..");
     if (err < 0) {
         printf("open directory failed!\n");
@@ -362,8 +362,8 @@ int file_read_and_check(const char * path, xfile_size_t elem_size,  xfile_size_t
 
     if ((readed_count = xfile_read(read_buffer, elem_size, e_count, &file)) > 0) {
         u32_t i = 0;
-        u32_t num_start = (u32_t)curr_offset / 4;       // èµ·å§‹æ•°å€¼
-        xfile_size_t bytes_count = readed_count * elem_size;    // æ€»çš„å­—èŠ‚æ•°
+        u32_t num_start = (u32_t)curr_offset / 4;       // ÆğÊ¼ÊıÖµ
+        xfile_size_t bytes_count = readed_count * elem_size;    // ×ÜµÄ×Ö½ÚÊı
         for (i = 0; i < bytes_count; i += 4) {
             if (read_buffer[i / 4] != num_start++) {
                 printf("read file failed!\n");
@@ -384,7 +384,7 @@ int file_read_and_check(const char * path, xfile_size_t elem_size,  xfile_size_t
 
 int fs_read_test (void) {
     const char * file_0b_path = "/read/0b.bin";
-    const char * file_1MB_path = "/read/1MB.bin";   // ä»0x00000000~0x0003FFFFçš„äºŒè¿›åˆ¶æ–‡ä»¶
+    const char * file_1MB_path = "/read/1MB.bin";   // ´Ó0x00000000~0x0003FFFFµÄ¶ş½øÖÆÎÄ¼ş
     xfat_err_t err;
 
     printf("\nfile read test!\n");
@@ -396,7 +396,7 @@ int fs_read_test (void) {
         return -1;
     }
 
-    // ä¸è¶…è¿‡ä¸€ä¸ªæ‰‡åŒºçš„è¯»å–
+    // ²»³¬¹ıÒ»¸öÉÈÇøµÄ¶ÁÈ¡
     memset(read_buffer, 0, sizeof(read_buffer));
     err = file_read_and_check(file_1MB_path, disk.sector_size - 32, 1);
     if (err < 0) {
@@ -404,7 +404,7 @@ int fs_read_test (void) {
         return -1;
     }
 
-    // åˆšå¥½ä¸€ä¸ªæ‰‡åŒºçš„è¯»å–
+    // ¸ÕºÃÒ»¸öÉÈÇøµÄ¶ÁÈ¡
     memset(read_buffer, 0, sizeof(read_buffer));
     err = file_read_and_check(file_1MB_path, disk.sector_size, 1);
     if (err < 0) {
@@ -412,7 +412,7 @@ int fs_read_test (void) {
         return -1;
     }
 
-    // è·¨æ‰‡åŒºçš„è¯»å–
+    // ¿çÉÈÇøµÄ¶ÁÈ¡
     memset(read_buffer, 0, sizeof(read_buffer));
     err = file_read_and_check(file_1MB_path, disk.sector_size + 14, 1);
     if (err < 0) {
@@ -420,7 +420,7 @@ int fs_read_test (void) {
         return -1;
     }
 
-    // åˆšå¥½è¶…è¿‡ä¸€ä¸ªç°‡çš„è¯»å–
+    // ¸ÕºÃ³¬¹ıÒ»¸ö´ØµÄ¶ÁÈ¡
     memset(read_buffer, 0, sizeof(read_buffer));
     err = file_read_and_check(file_1MB_path, xfat.cluster_byte_size + 32, 1);
     if (err < 0) {
@@ -428,7 +428,7 @@ int fs_read_test (void) {
         return -1;
     }
 
-    // è·¨å¤šä¸ªç°‡çš„è¯»å–
+    // ¿ç¶à¸ö´ØµÄ¶ÁÈ¡
     memset(read_buffer, 0, sizeof(read_buffer));
     err = file_read_and_check(file_1MB_path, 2 * xfat.cluster_byte_size + 32, 1);
     if (err < 0) {
@@ -536,7 +536,7 @@ int fs_seek_test(void) {
 
 int fs_open_test (void) {
     const char * not_exist_path = "/file_not_exist.txt";
-    const char * exist_path = "/12345678ABC";    // æ³¨æ„ï¼šæ–‡ä»¶åè¦å¤§å†™
+    const char * exist_path = "/12345678ABC";    // ×¢Òâ£ºÎÄ¼şÃûÒª´óĞ´
     const char * file1 = "/open/file.txt";
     const char * file2 = "/open/a0/a1/a2/a3/a4/a5/a6/a7/a8/a9/a10/a11/a12/a13/a14/a15/a16/a17/a18/a19/file.txt";
     xfat_err_t err;
@@ -596,7 +596,7 @@ xfat_err_t fs_modify_file_test(void) {
 
     printf("\n Before rename:\n");
 
-    // æ˜¾ç¤ºåŸç›®å½•ä¸‹çš„æ–‡ä»¶
+    // ÏÔÊ¾Ô­Ä¿Â¼ÏÂµÄÎÄ¼ş
     err = xfile_open(&xfat, &file, dir_path);
     if (err < 0) {
         printf("Open dir failed!\n");
@@ -609,11 +609,11 @@ xfat_err_t fs_modify_file_test(void) {
     }
     xfile_close(&file);
 
-    // å°è¯•æ‰“å¼€å…¶ä¸­ä¸€ä¸ªè·¯å¾„ï¼Œåˆ¤æ–­å¦‚ä½•å‘½å
+    // ³¢ÊÔ´ò¿ªÆäÖĞÒ»¸öÂ·¾¶£¬ÅĞ¶ÏÈçºÎÃüÃû
     sprintf(curr_path, "%s%s", dir_path, file_name1);
     err = xfile_open(&xfat, &file, curr_path);
     if (err < 0) {
-        // æ‰“å¼€æ–‡ä»¶1å¤±è´¥ï¼Œåˆ™å½“å‰æ–‡ä»¶2å­˜åœ¨ï¼Œæ–°åç§°ä¸ºæ–‡ä»¶1åç§°
+        // ´ò¿ªÎÄ¼ş1Ê§°Ü£¬Ôòµ±Ç°ÎÄ¼ş2´æÔÚ£¬ĞÂÃû³ÆÎªÎÄ¼ş1Ãû³Æ
         sprintf(curr_path, "%s%s", dir_path, file_name2);
         new_name = file_name1;
     } else {
@@ -621,7 +621,7 @@ xfat_err_t fs_modify_file_test(void) {
         new_name = file_name2;
     }
 
-    // æ–‡ä»¶é‡å‘½å
+    // ÎÄ¼şÖØÃüÃû
     err = xfile_rename(&xfat, curr_path, new_name);
     if (err < 0) {
         printf("rename failed: %s -- to -- %s\n", curr_path, new_name);
@@ -633,7 +633,7 @@ xfat_err_t fs_modify_file_test(void) {
 
     sprintf(curr_path, "%s%s", dir_path, new_name);
 
-    // ä¿®æ”¹æ–‡ä»¶æ—¶é—´
+    // ĞŞ¸ÄÎÄ¼şÊ±¼ä
     timeinfo.year = 2030;
     timeinfo.month = 10;
     timeinfo.day = 12;
@@ -670,7 +670,7 @@ xfat_err_t fs_modify_file_test(void) {
         return err;
     }
 
-    // é‡å‘½ååï¼Œåˆ—è¡¨æ˜¾ç¤ºæ‰€æœ‰æ–‡ä»¶ï¼Œæ˜¾ç¤ºå‘½åçŠ¶æ€
+    // ÖØÃüÃûºó£¬ÁĞ±íÏÔÊ¾ËùÓĞÎÄ¼ş£¬ÏÔÊ¾ÃüÃû×´Ì¬
     err = xfile_open(&xfat, &file, dir_path);
     if (err < 0) {
         printf("Open dir failed!\n");
@@ -697,25 +697,25 @@ int file_write_test(const char * path, u32_t elem_size, u32_t elem_count, u32_t 
         return err;
     }
 
-    // è¿ç»­å¤šæ¬¡æµ‹è¯•å†™å…¥
+    // Á¬Ğø¶à´Î²âÊÔĞ´Èë
     for (i = 0; i < write_count; i++) {
         u32_t end;
 
-        // ä»é¢„å…ˆæŒ‡å®šçš„write_bufferä¸­å–å‡ºæ•°æ®å†™å…¥æ–‡ä»¶
+        // ´ÓÔ¤ÏÈÖ¸¶¨µÄwrite_bufferÖĞÈ¡³öÊı¾İĞ´ÈëÎÄ¼ş
         err = xfile_write(write_buffer, elem_size, elem_count, &file);
         if (err < 0) {
             printf("Write failed\n");
             return err;
         }
 
-        // å†å®šä½åˆ°æ–‡ä»¶å¼€å§‹å¤„
+        // ÔÙ¶¨Î»µ½ÎÄ¼ş¿ªÊ¼´¦
         err = xfile_seek(&file, -(xfile_ssize_t)(elem_size * elem_count), XFAT_SEEK_CUR);
         if (err < 0) {
             printf("seek failed\n");
             return err;
         }
 
-        // è¯»å–æ¯”è¾ƒï¼Œæ£€æŸ¥æ˜¯å¦å®Œå…¨å†™å…¥
+        // ¶ÁÈ¡±È½Ï£¬¼ì²éÊÇ·ñÍêÈ«Ğ´Èë
         memset(read_buffer, 0, sizeof(read_buffer));
         err = xfile_read(read_buffer, elem_size, elem_count, &file);
         if (err < 0) {
@@ -744,43 +744,43 @@ int fs_write_test (void) {
     printf("Write file test!\n");
 
     sprintf(file_path, "%s%s", dir_path, "1MB.bin");
-    err = file_write_test(file_path, 32, 64, 5);     // ä¸åˆ°ä¸€ä¸ªæ‰‡åŒºï¼Œä¸”éæ‰‡åŒºè¾¹ç•Œå¯¹é½çš„å†™
+    err = file_write_test(file_path, 32, 64, 5);     // ²»µ½Ò»¸öÉÈÇø£¬ÇÒ·ÇÉÈÇø±ß½ç¶ÔÆëµÄĞ´
     if (err < 0) {
         printf("write file failed!\n");
         return err;
     }
 
-    err = file_write_test(file_path, disk.sector_size, 12, 5);     // æ‰‡åŒºè¾¹ç•Œå†™ï¼Œä¸”éæ‰‡åŒºè¾¹ç•Œå¯¹é½çš„å†™
+    err = file_write_test(file_path, disk.sector_size, 12, 5);     // ÉÈÇø±ß½çĞ´£¬ÇÒ·ÇÉÈÇø±ß½ç¶ÔÆëµÄĞ´
     if (err < 0) {
         printf("write file failed!\n");
         return err;
     }
 
-    err = file_write_test(file_path, disk.sector_size + 32, 12, 5);     // è¶…è¿‡1ä¸ªæ‰‡åŒºï¼Œä¸”éæ‰‡åŒºè¾¹ç•Œå¯¹é½çš„å†™
+    err = file_write_test(file_path, disk.sector_size + 32, 12, 5);     // ³¬¹ı1¸öÉÈÇø£¬ÇÒ·ÇÉÈÇø±ß½ç¶ÔÆëµÄĞ´
     if (err < 0) {
         printf("write file failed!\n");
         return err;
     }
 
-    err = file_write_test(file_path, xfat.cluster_byte_size, 12, 5);     // ç°‡è¾¹ç•Œå†™ï¼Œä¸”éæ‰‡åŒºè¾¹ç•Œå¯¹é½çš„å†™
+    err = file_write_test(file_path, xfat.cluster_byte_size, 12, 5);     // ´Ø±ß½çĞ´£¬ÇÒ·ÇÉÈÇø±ß½ç¶ÔÆëµÄĞ´
     if (err < 0) {
         printf("write file failed!\n");
         return err;
     }
 
-    err = file_write_test(file_path, xfat.cluster_byte_size + 32, 12, 5);     // è¶…è¿‡1ä¸ªç°‡ï¼Œä¸”éæ‰‡åŒºè¾¹ç•Œå¯¹é½çš„å†™
+    err = file_write_test(file_path, xfat.cluster_byte_size + 32, 12, 5);     // ³¬¹ı1¸ö´Ø£¬ÇÒ·ÇÉÈÇø±ß½ç¶ÔÆëµÄĞ´
     if (err < 0) {
         printf("write file failed!\n");
         return err;
     }
 
-    err = file_write_test(file_path, 3 * xfat.cluster_byte_size + 32, 12, 5);     // è¶…è¿‡å¤šä¸ªç°‡ï¼Œä¸”éæ‰‡åŒºè¾¹ç•Œå¯¹é½çš„å†™
+    err = file_write_test(file_path, 3 * xfat.cluster_byte_size + 32, 12, 5);     // ³¬¹ı¶à¸ö´Ø£¬ÇÒ·ÇÉÈÇø±ß½ç¶ÔÆëµÄĞ´
     if (err < 0) {
         printf("write file failed!\n");
         return err;
     }
 
-    // æ‰©å®¹å†™æµ‹è¯•
+    // À©ÈİĞ´²âÊÔ
     do {
         xfile_t file;
         xfile_size_t size = sizeof(write_buffer);
@@ -791,7 +791,7 @@ int fs_write_test (void) {
 
         sprintf(file_path, "%s%s", dir_path, "1KB.bin");
 
-        // æ£€æŸ¥æ–‡ä»¶å†™å…¥åå¤§å°
+        // ¼ì²éÎÄ¼şĞ´Èëºó´óĞ¡
         err = xfile_open(&xfat, &file, file_path);
         if (err < 0) {
             printf("Open failed:%s\n", file_path);
@@ -822,7 +822,7 @@ int fs_write_test (void) {
             return err;
         }
 
-        // æ£€æŸ¥æ–‡ä»¶å†…å®¹
+        // ¼ì²éÎÄ¼şÄÚÈİ
         for (i = 0; i < size / sizeof(read_buffer[0]); i++) {
             if (read_buffer[i] != write_buffer[i]) {
                 printf("content different!\n");
@@ -840,24 +840,24 @@ int fs_write_test (void) {
 
 xfat_err_t fs_create_test (void) {
     xfat_err_t err = FS_ERR_OK;
-    const char * dir_path = "/create/c0/c1/c2/c3/c4/c5/c6/c7/c8/c9";  // è¿™ä¸ªè·¯å¾„å¯é…ç½®çŸ­ä¸€äº›
+    const char * dir_path = "/create/c0/c1/c2/c3/c4/c5/c6/c7/c8/c9";  // Õâ¸öÂ·¾¶¿ÉÅäÖÃ¶ÌÒ»Ğ©
     char path[256];
     int i, j;
     xfile_t file;
 
     printf("create test\n");
 
-    // æ³¨æ„ï¼Œå¦‚æœæ ¹ç›®å½•ä¸‹å·²ç»æœ‰è¦åˆ›å»ºçš„æ–‡ä»¶
-    // æˆ–è€…ä¹‹å‰åœ¨è°ƒè¯•è¯¥ä»£ç æ—¶ï¼Œå·²ç»æ‰§è¡Œäº†ä¸€éƒ¨åˆ†å¯¼è‡´éƒ¨åˆ†æ–‡ä»¶è¢«åˆ›å»ºæ—¶
-    // æ³¨æ„åœ¨é‡å¯è°ƒè¯•å‰ï¼Œå…ˆæ¸…é™¤å¹²å‡€æ ¹ç›®å½•ä¸‹çš„æ‰€æœ‰è¿™äº›æ–‡ä»¶
-    // å¦‚æœæ‡’å¾—æ¸…é™¤ï¼Œå¯ä»¥æ›´æ”¹è¦åˆ›å»ºçš„æ–‡ä»¶å
+    // ×¢Òâ£¬Èç¹û¸ùÄ¿Â¼ÏÂÒÑ¾­ÓĞÒª´´½¨µÄÎÄ¼ş
+    // »òÕßÖ®Ç°ÔÚµ÷ÊÔ¸Ã´úÂëÊ±£¬ÒÑ¾­Ö´ĞĞÁËÒ»²¿·Öµ¼ÖÂ²¿·ÖÎÄ¼ş±»´´½¨Ê±
+    // ×¢ÒâÔÚÖØÆôµ÷ÊÔÇ°£¬ÏÈÇå³ı¸É¾»¸ùÄ¿Â¼ÏÂµÄËùÓĞÕâĞ©ÎÄ¼ş
+    // Èç¹ûÀÁµÃÇå³ı£¬¿ÉÒÔ¸ü¸ÄÒª´´½¨µÄÎÄ¼şÃû
     for (i = 0; i < 3; i++) {
-        // åˆ›å»ºç›®å½•
+        // ´´½¨Ä¿Â¼
         printf("no %d:create dir %s\n", i, dir_path);
         err = xfile_mkdir(&xfat, dir_path);
         if (err < 0) {
             if (err == FS_ERR_EXISTED) {
-                // åªæœ‰åœ¨ç¬¬ä¸€æ¬¡åˆ›å»ºæ—¶æ‰ä¼šæˆåŠŸ
+                // Ö»ÓĞÔÚµÚÒ»´Î´´½¨Ê±²Å»á³É¹¦
                 printf("dir exist %s, continue.\n", dir_path);
             } else {
                 printf("create dir failed %s\n", dir_path);
@@ -866,14 +866,14 @@ xfat_err_t fs_create_test (void) {
         }
         
         for (j = 0; j < 50; j++) {
-            // åˆ›å»ºæ–‡ä»¶
+            // ´´½¨ÎÄ¼ş
             sprintf(path, "%s/b%d.txt", dir_path, j);
             printf("no %d:create file %s\n", i, path);
 
             err = xfile_mkfile(&xfat, path);
             if (err < 0) {
                 if (err == FS_ERR_EXISTED) {
-                    // åªæœ‰åœ¨ç¬¬ä¸€æ¬¡åˆ›å»ºæ—¶æ‰ä¼šæˆåŠŸ
+                    // Ö»ÓĞÔÚµÚÒ»´Î´´½¨Ê±²Å»á³É¹¦
                     printf("file exist %s, continue.\n", path);
                 } else {
                     printf("create file failed %s\n", path);
@@ -881,7 +881,7 @@ xfat_err_t fs_create_test (void) {
                 }
             }
 
-            // è¿›è¡Œä¸€äº›è¯»å†™æµ‹è¯•,  å†™æœ‰ç‚¹bugï¼Œå†™3éå°±ä¼šä¸¢æ•°æ®
+            // ½øĞĞÒ»Ğ©¶ÁĞ´²âÊÔ,  Ğ´ÓĞµãbug£¬Ğ´3±é¾Í»á¶ªÊı¾İ
             err = file_write_test(path, 1024, 1, 1);
             if (err < 0) {
                 printf("write file failed! %s\n", path);
@@ -891,7 +891,7 @@ xfat_err_t fs_create_test (void) {
         }
     }
 
-    // è¿™é‡Œè‚¯å®šä¼šå†™å¤±è´¥
+    // ÕâÀï¿Ï¶¨»áĞ´Ê§°Ü
     err = xfile_rmdir(&xfat, dir_path);
     if (err == FS_ERR_OK) {
         printf("rm dir failed!\n");
@@ -917,7 +917,7 @@ xfat_err_t fs_create_test (void) {
     err = xfile_close(&file);
     if (err < 0) return err;
 
-    // è¿™é‡Œåº”è¯¥ä¼šæˆåŠŸ
+    // ÕâÀïÓ¦¸Ã»á³É¹¦
     err = xfile_rmdir(&xfat, dir_path);
     if (err != FS_ERR_OK) {
         printf("rm dir failed!\n");
@@ -930,7 +930,7 @@ xfat_err_t fs_create_test (void) {
 
 xfat_err_t fs_rmdir_tree_test(void) {
     xfat_err_t err = FS_ERR_OK;
-    const char* dir_path = "/rmtree/c0/c1/c2/c3/c4/c5/c6/c7/c8/c9";  // è¿™ä¸ªè·¯å¾„å¯é…ç½®çŸ­ä¸€äº›
+    const char* dir_path = "/rmtree/c0/c1/c2/c3/c4/c5/c6/c7/c8/c9";  // Õâ¸öÂ·¾¶¿ÉÅäÖÃ¶ÌÒ»Ğ©
     xfile_t file;
 
     printf("fs_rmdir_tree_test test\n");

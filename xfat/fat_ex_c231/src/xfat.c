@@ -1,35 +1,35 @@
 /**
- * æœ¬æºç é…å¥—çš„è¯¾ç¨‹ä¸º - ä»0åˆ°1åŠ¨æ‰‹å†™FAT32æ–‡ä»¶ç³»ç»Ÿã€‚æ¯ä¸ªä¾‹ç¨‹å¯¹åº”ä¸€ä¸ªè¯¾æ—¶ï¼Œå°½å¯èƒ½æ³¨é‡Šã€‚
- * ä½œè€…ï¼šæè¿°é“œ
- * è¯¾ç¨‹ç½‘å€ï¼šhttp://01ketang.cc
- * ç‰ˆæƒå£°æ˜ï¼šæœ¬æºç éå¼€æºï¼ŒäºŒæ¬¡å¼€å‘ï¼Œæˆ–å…¶å®ƒå•†ç”¨å‰è¯·è”ç³»ä½œè€…ã€‚
+ * ±¾Ô´ÂëÅäÌ×µÄ¿Î³ÌÎª - ´Ó0µ½1¶¯ÊÖĞ´FAT32ÎÄ¼şÏµÍ³¡£Ã¿¸öÀı³Ì¶ÔÓ¦Ò»¸ö¿ÎÊ±£¬¾¡¿ÉÄÜ×¢ÊÍ¡£
+ * ×÷Õß£ºÀîÊöÍ­
+ * ¿Î³ÌÍøÖ·£ºhttp://01ketang.cc
+ * °æÈ¨ÉùÃ÷£º±¾Ô´Âë·Ç¿ªÔ´£¬¶ş´Î¿ª·¢£¬»òÆäËüÉÌÓÃÇ°ÇëÁªÏµ×÷Õß¡£
  */
 #include <stdlib.h>
 #include <string.h>
 #include "xfat.h"
 #include "xdisk.h"
 
-extern u8_t temp_buffer[512];      // todo: ç¼“å­˜ä¼˜åŒ–
+extern u8_t temp_buffer[512];      // todo: »º´æÓÅ»¯
 
-#define is_path_sep(ch)         (((ch) == '\\') || ((ch == '/')))       // åˆ¤æ–­æ˜¯å¦æ˜¯æ–‡ä»¶ååˆ†éš”ç¬¦
-#define xfat_get_disk(xfat)     ((xfat)->disk_part->disk)               // è·å–diskç»“æ„
-#define to_sector(disk, offset)     ((offset) / (disk)->sector_size)    // å°†ä¾ç¨€è½¬æ¢ä¸ºæ‰‡åŒºå·
-#define to_sector_offset(disk, offset)   ((offset) % (disk)->sector_size)   // è·å–æ‰‡åŒºä¸­çš„ç›¸å¯¹åç§»
+#define is_path_sep(ch)         (((ch) == '\\') || ((ch == '/')))       // ÅĞ¶ÏÊÇ·ñÊÇÎÄ¼şÃû·Ö¸ô·û
+#define xfat_get_disk(xfat)     ((xfat)->disk_part->disk)               // »ñÈ¡disk½á¹¹
+#define to_sector(disk, offset)     ((offset) / (disk)->sector_size)    // ½«ÒÀÏ¡×ª»»ÎªÉÈÇøºÅ
+#define to_sector_offset(disk, offset)   ((offset) % (disk)->sector_size)   // »ñÈ¡ÉÈÇøÖĞµÄÏà¶ÔÆ«ÒÆ
 
 /**
- * ä»dbrä¸­è§£æå‡ºfatç›¸å…³é…ç½®å‚æ•°
- * @param dbr è¯»å–çš„è®¾å¤‡dbr
+ * ´ÓdbrÖĞ½âÎö³öfatÏà¹ØÅäÖÃ²ÎÊı
+ * @param dbr ¶ÁÈ¡µÄÉè±¸dbr
  * @return
  */
 static xfat_err_t parse_fat_header (xfat_t * xfat, dbr_t * dbr) {
     xdisk_part_t * xdisk_part = xfat->disk_part;
 
-    // è§£æDBRå‚æ•°ï¼Œè§£æå‡ºæœ‰ç”¨çš„å‚æ•°
+    // ½âÎöDBR²ÎÊı£¬½âÎö³öÓĞÓÃµÄ²ÎÊı
     xfat->root_cluster = dbr->fat32.BPB_RootClus;
     xfat->fat_tbl_sectors = dbr->fat32.BPB_FATSz32;
 
-    // å¦‚æœç¦æ­¢FATé•œåƒï¼Œåªåˆ·æ–°ä¸€ä¸ªFATè¡¨
-    // disk_part->start_blockä¸ºè¯¥åˆ†åŒºçš„ç»å¯¹ç‰©ç†æ‰‡åŒºå·ï¼Œæ‰€ä»¥ä¸éœ€è¦å†åŠ ä¸ŠHidden_sector
+    // Èç¹û½ûÖ¹FAT¾µÏñ£¬Ö»Ë¢ĞÂÒ»¸öFAT±í
+    // disk_part->start_blockÎª¸Ã·ÖÇøµÄ¾ø¶ÔÎïÀíÉÈÇøºÅ£¬ËùÒÔ²»ĞèÒªÔÙ¼ÓÉÏHidden_sector
     if (dbr->fat32.BPB_ExtFlags & (1 << 7)) {
         u32_t table = dbr->fat32.BPB_ExtFlags & 0xF;
         xfat->fat_start_sector = dbr->bpb.BPB_RsvdSecCnt + xdisk_part->start_sector + table * xfat->fat_tbl_sectors;
@@ -47,9 +47,9 @@ static xfat_err_t parse_fat_header (xfat_t * xfat, dbr_t * dbr) {
 }
 
 /**
- * åˆå§‹åŒ–FATé¡¹
- * @param xfat xfatç»“æ„
- * @param disk_part åˆ†åŒºç»“æ„
+ * ³õÊ¼»¯FATÏî
+ * @param xfat xfat½á¹¹
+ * @param disk_part ·ÖÇø½á¹¹
  * @return
  */
 xfat_err_t xfat_open(xfat_t * xfat, xdisk_part_t * xdisk_part) {
@@ -59,19 +59,19 @@ xfat_err_t xfat_open(xfat_t * xfat, xdisk_part_t * xdisk_part) {
 
     xfat->disk_part = xdisk_part;
 
-    // è¯»å–dbrå‚æ•°åŒº
+    // ¶ÁÈ¡dbr²ÎÊıÇø
     err = xdisk_read_sector(xdisk, (u8_t *) dbr, xdisk_part->start_sector, 1);
     if (err < 0) {
         return err;
     }
 
-    // è§£ædbrå‚æ•°ä¸­çš„fatç›¸å…³ä¿¡æ¯
+    // ½âÎödbr²ÎÊıÖĞµÄfatÏà¹ØĞÅÏ¢
     err = parse_fat_header(xfat, dbr);
     if (err < 0) {
         return err;
     }
 
-    // å…ˆä¸€æ¬¡æ€§å…¨éƒ¨è¯»å–FATè¡¨: todo: ä¼˜åŒ–
+    // ÏÈÒ»´ÎĞÔÈ«²¿¶ÁÈ¡FAT±í: todo: ÓÅ»¯
     xfat->fat_buffer = (u8_t *)malloc(xfat->fat_tbl_sectors * xdisk->sector_size);
     err = xdisk_read_sector(xdisk, (u8_t *)xfat->fat_buffer, xfat->fat_start_sector, xfat->fat_tbl_sectors);
     if (err < 0) {
@@ -82,29 +82,29 @@ xfat_err_t xfat_open(xfat_t * xfat, xdisk_part_t * xdisk_part) {
 }
 
 /**
- * è·å–æŒ‡å®šç°‡å·çš„ç¬¬ä¸€ä¸ªæ‰‡åŒºç¼–å·
- * @param xfat xfatç»“æ„
- * @param cluster_no  ç°‡å·
- * @return æ‰‡åŒºå·
+ * »ñÈ¡Ö¸¶¨´ØºÅµÄµÚÒ»¸öÉÈÇø±àºÅ
+ * @param xfat xfat½á¹¹
+ * @param cluster_no  ´ØºÅ
+ * @return ÉÈÇøºÅ
  */
 u32_t cluster_fist_sector(xfat_t *xfat, u32_t cluster_no) {
     u32_t data_start_sector = xfat->fat_start_sector + xfat->fat_tbl_sectors * xfat->fat_tbl_nr;
-    return data_start_sector + (cluster_no - 2) * xfat->sec_per_cluster;    // å‰ä¸¤ä¸ªç°‡å·ä¿ç•™
+    return data_start_sector + (cluster_no - 2) * xfat->sec_per_cluster;    // Ç°Á½¸ö´ØºÅ±£Áô
 }
 
 /**
- * æ£€æŸ¥æŒ‡å®šç°‡æ˜¯å¦å¯ç”¨ï¼Œéå ç”¨æˆ–åç°‡
- * @param cluster å¾…æ£€æŸ¥çš„ç°‡
+ * ¼ì²éÖ¸¶¨´ØÊÇ·ñ¿ÉÓÃ£¬·ÇÕ¼ÓÃ»ò»µ´Ø
+ * @param cluster ´ı¼ì²éµÄ´Ø
  * @return
  */
 int is_cluster_valid(u32_t cluster) {
     cluster &= 0x0FFFFFFF;
-    return (cluster < 0x0FFFFFF0) && (cluster >= 0x2);     // å€¼æ˜¯å¦æ­£ç¡®
+    return (cluster < 0x0FFFFFF0) && (cluster >= 0x2);     // ÖµÊÇ·ñÕıÈ·
 }
 
 /**
- * è·å–æŒ‡å®šç°‡çš„ä¸‹ä¸€ä¸ªç°‡
- * @param xfat xfatç»“æ„
+ * »ñÈ¡Ö¸¶¨´ØµÄÏÂÒ»¸ö´Ø
+ * @param xfat xfat½á¹¹
  * @param curr_cluster_no
  * @param next_cluster
  * @return
@@ -121,11 +121,11 @@ xfat_err_t get_next_cluster(xfat_t * xfat, u32_t curr_cluster_no, u32_t * next_c
 }
 
 /**
- * è¯»å–ä¸€ä¸ªç°‡çš„å†…å®¹åˆ°æŒ‡å®šç¼“å†²åŒº
- * @param xfat xfatç»“æ„
- * @param buffer æ•°æ®å­˜å‚¨çš„ç¼“å†²åŒº
- * @param cluster è¯»å–çš„èµ·å§‹ç°‡å·
- * @param count è¯»å–çš„ç°‡æ•°é‡
+ * ¶ÁÈ¡Ò»¸ö´ØµÄÄÚÈİµ½Ö¸¶¨»º³åÇø
+ * @param xfat xfat½á¹¹
+ * @param buffer Êı¾İ´æ´¢µÄ»º³åÇø
+ * @param cluster ¶ÁÈ¡µÄÆğÊ¼´ØºÅ
+ * @param count ¶ÁÈ¡µÄ´ØÊıÁ¿
  * @return
  */
 xfat_err_t read_cluster(xfat_t *xfat, u8_t *buffer, u32_t cluster, u32_t count) {
@@ -148,9 +148,9 @@ xfat_err_t read_cluster(xfat_t *xfat, u8_t *buffer, u32_t cluster, u32_t count) 
 }
 
 /**
- * åˆ¤æ–­ä¸¤ä¸ªæ–‡ä»¶åæ˜¯å¦åŒ¹é…
- * @param name_in_dir fatdirä¸­çš„æ–‡ä»¶åæ ¼å¼
- * @param to_find_name åº”ç”¨å¯è¯»çš„æ–‡ä»¶åæ ¼å¼
+ * ÅĞ¶ÏÁ½¸öÎÄ¼şÃûÊÇ·ñÆ¥Åä
+ * @param name_in_dir fatdirÖĞµÄÎÄ¼şÃû¸ñÊ½
+ * @param to_find_name Ó¦ÓÃ¿É¶ÁµÄÎÄ¼şÃû¸ñÊ½
  * @return
  */
 static u8_t is_filename_match(const char *name_in_dir, const char *to_find_name) {
@@ -158,14 +158,14 @@ static u8_t is_filename_match(const char *name_in_dir, const char *to_find_name)
 }
 
 /**
- * è·³è¿‡å¼€å¤´çš„åˆ†éš”ç¬¦
- * @param path ç›®æ ‡è·¯å¾„
+ * Ìø¹ı¿ªÍ·µÄ·Ö¸ô·û
+ * @param path Ä¿±êÂ·¾¶
  * @return
  */
 static const char * skip_first_path_sep (const char * path) {
     const char * c = path;
 
-    // è·³è¿‡å¼€å¤´çš„åˆ†éš”ç¬¦
+    // Ìø¹ı¿ªÍ·µÄ·Ö¸ô·û
     while (is_path_sep(*c)) {
         c++;
     }
@@ -173,14 +173,14 @@ static const char * skip_first_path_sep (const char * path) {
 }
 
 /**
- * è·å–å­è·¯å¾„
- * @param dir_path ä¸Šä¸€çº§è·¯å¾„
+ * »ñÈ¡×ÓÂ·¾¶
+ * @param dir_path ÉÏÒ»¼¶Â·¾¶
  * @return
  */
 const char * get_child_path(const char *dir_path) {
     const char * c = skip_first_path_sep(dir_path);
 
-    // è·³è¿‡çˆ¶ç›®å½•
+    // Ìø¹ı¸¸Ä¿Â¼
     while ((*c != '\0') && !is_path_sep(*c)) {
         c++;
     }
@@ -189,8 +189,8 @@ const char * get_child_path(const char *dir_path) {
 }
 
 /**
- * è§£ædiritemï¼Œè·å–æ–‡ä»¶ç±»å‹
- * @param diritem éœ€è§£æçš„diritem
+ * ½âÎödiritem£¬»ñÈ¡ÎÄ¼şÀàĞÍ
+ * @param diritem Ğè½âÎöµÄdiritem
  * @return
  */
 static xfile_type_t get_file_type(const diritem_t *diritem) {
@@ -208,7 +208,7 @@ static xfile_type_t get_file_type(const diritem_t *diritem) {
 }
 
 /**
- * è·å–diritemçš„æ–‡ä»¶èµ·å§‹ç°‡å·
+ * »ñÈ¡diritemµÄÎÄ¼şÆğÊ¼´ØºÅ
  * @param item
  * @return
  */
@@ -217,13 +217,13 @@ static u32_t get_diritem_cluster (diritem_t * item) {
 }
 
 /**
- * æŸ¥æ‰¾æŒ‡å®šdir_itemï¼Œå¹¶è¿”å›ç›¸åº”çš„ç»“æ„
- * @param xfat xfatç»“æ„
- * @param dir_cluster dir_itemæ‰€åœ¨çš„ç›®å½•æ•°æ®ç°‡å·
- * @param cluster_offset ç°‡ä¸­çš„åç§»
- * @param move_bytes æŸ¥æ‰¾åˆ°ç›¸åº”çš„itemé¡¹åï¼Œç›¸å¯¹äºæœ€å¼€å§‹ä¼ å…¥çš„åç§»å€¼ï¼Œç§»åŠ¨äº†å¤šå°‘ä¸ªå­—èŠ‚æ‰å®šä½åˆ°è¯¥item
- * @param path æ–‡ä»¶æˆ–ç›®å½•çš„å®Œæ•´è·¯å¾„
- * @param r_diritem æŸ¥æ‰¾åˆ°çš„diritemé¡¹
+ * ²éÕÒÖ¸¶¨dir_item£¬²¢·µ»ØÏàÓ¦µÄ½á¹¹
+ * @param xfat xfat½á¹¹
+ * @param dir_cluster dir_itemËùÔÚµÄÄ¿Â¼Êı¾İ´ØºÅ
+ * @param cluster_offset ´ØÖĞµÄÆ«ÒÆ
+ * @param move_bytes ²éÕÒµ½ÏàÓ¦µÄitemÏîºó£¬Ïà¶ÔÓÚ×î¿ªÊ¼´«ÈëµÄÆ«ÒÆÖµ£¬ÒÆ¶¯ÁË¶àÉÙ¸ö×Ö½Ú²Å¶¨Î»µ½¸Ãitem
+ * @param path ÎÄ¼ş»òÄ¿Â¼µÄÍêÕûÂ·¾¶
+ * @param r_diritem ²éÕÒµ½µÄdiritemÏî
  * @return
  */
 static xfat_err_t locate_file_dir_item(xfat_t *xfat, u32_t *dir_cluster, u32_t *cluster_offset,
@@ -290,12 +290,12 @@ static xfat_err_t locate_file_dir_item(xfat_t *xfat, u32_t *dir_cluster, u32_t *
 }
 
 /**
- * æ‰“å¼€æŒ‡å®šdir_clusterå¼€å§‹çš„ç°‡é“¾ä¸­åŒ…å«çš„å­æ–‡ä»¶ã€‚
- * å¦‚æœpathä¸ºç©ºï¼Œåˆ™ä»¥dir_clusteråˆ›å»ºä¸€ä¸ªæ‰“å¼€çš„ç›®å½•å¯¹åƒ
- * @param xfat xfatç»“æ„
- * @param dir_cluster æŸ¥æ‰¾çš„é¡¶å±‚ç›®å½•çš„èµ·å§‹ç°‡é“¾
- * @param file æ‰“å¼€çš„æ–‡ä»¶fileç»“æ„
- * @param path ä»¥dir_clusteræ‰€å¯¹åº”çš„ç›®å½•ä¸ºèµ·ç‚¹çš„å®Œæ•´è·¯å¾„
+ * ´ò¿ªÖ¸¶¨dir_cluster¿ªÊ¼µÄ´ØÁ´ÖĞ°üº¬µÄ×ÓÎÄ¼ş¡£
+ * Èç¹ûpathÎª¿Õ£¬ÔòÒÔdir_cluster´´½¨Ò»¸ö´ò¿ªµÄÄ¿Â¼¶ÔÏñ
+ * @param xfat xfat½á¹¹
+ * @param dir_cluster ²éÕÒµÄ¶¥²ãÄ¿Â¼µÄÆğÊ¼´ØÁ´
+ * @param file ´ò¿ªµÄÎÄ¼şfile½á¹¹
+ * @param path ÒÔdir_clusterËù¶ÔÓ¦µÄÄ¿Â¼ÎªÆğµãµÄÍêÕûÂ·¾¶
  * @return
  */
 static xfat_err_t open_sub_file (xfat_t * xfat, u32_t dir_cluster, xfile_t * file, const char * path) {
@@ -304,19 +304,19 @@ static xfat_err_t open_sub_file (xfat_t * xfat, u32_t dir_cluster, xfile_t * fil
 
     path = skip_first_path_sep(path);
 
-    // å¦‚æœä¼ å…¥è·¯å¾„ä¸ä¸ºç©ºï¼Œåˆ™æŸ¥çœ‹å­ç›®å½•
-    // å¦åˆ™ï¼Œç›´æ¥è®¤ä¸ºdir_clusteræŒ‡å‘çš„æ˜¯ä¸€ä¸ªç›®å½•ï¼Œç”¨äºæ‰“å¼€æ ¹ç›®å½•
+    // Èç¹û´«ÈëÂ·¾¶²»Îª¿Õ£¬Ôò²é¿´×ÓÄ¿Â¼
+    // ·ñÔò£¬Ö±½ÓÈÏÎªdir_clusterÖ¸ÏòµÄÊÇÒ»¸öÄ¿Â¼£¬ÓÃÓÚ´ò¿ª¸ùÄ¿Â¼
     if ((path != 0) && (*path != '\0')) {
         diritem_t * dir_item = (diritem_t *)0;
         u32_t file_start_cluster = 0;
         const char * curr_path = path;
 
-       // æ‰¾åˆ°pathå¯¹åº”çš„èµ·å§‹ç°‡
+       // ÕÒµ½path¶ÔÓ¦µÄÆğÊ¼´Ø
         while (curr_path != (const char *)0) {
             u32_t moved_bytes = 0;
             dir_item = (diritem_t *)0;
 
-            // åœ¨çˆ¶ç›®å½•ä¸‹æŸ¥æ‰¾æŒ‡å®šè·¯å¾„å¯¹åº”çš„æ–‡ä»¶
+            // ÔÚ¸¸Ä¿Â¼ÏÂ²éÕÒÖ¸¶¨Â·¾¶¶ÔÓ¦µÄÎÄ¼ş
             xfat_err_t err = locate_file_dir_item(xfat, &parent_cluster, &parent_cluster_offset,
                                                 curr_path, &moved_bytes, &dir_item);
             if (err < 0) {
@@ -354,10 +354,10 @@ static xfat_err_t open_sub_file (xfat_t * xfat, u32_t dir_cluster, xfile_t * fil
 }
 
 /**
- * æ‰“å¼€æŒ‡å®šçš„æ–‡ä»¶æˆ–ç›®å½•
- * @param xfat xfatç»“æ„
- * @param file æ‰“å¼€çš„æ–‡ä»¶æˆ–ç›®å½•
- * @param path æ–‡ä»¶æˆ–ç›®å½•æ‰€åœ¨çš„å®Œæ•´è·¯å¾„
+ * ´ò¿ªÖ¸¶¨µÄÎÄ¼ş»òÄ¿Â¼
+ * @param xfat xfat½á¹¹
+ * @param file ´ò¿ªµÄÎÄ¼ş»òÄ¿Â¼
+ * @param path ÎÄ¼ş»òÄ¿Â¼ËùÔÚµÄÍêÕûÂ·¾¶
  * @return
  */
 xfat_err_t xfile_open(xfat_t * xfat, xfile_t * file, const char * path) {
@@ -365,8 +365,8 @@ xfat_err_t xfile_open(xfat_t * xfat, xfile_t * file, const char * path) {
 }
 
 /**
- * å…³é—­å·²ç»æ‰“å¼€çš„æ–‡ä»¶
- * @param file å¾…å…³é—­çš„æ–‡ä»¶
+ * ¹Ø±ÕÒÑ¾­´ò¿ªµÄÎÄ¼ş
+ * @param file ´ı¹Ø±ÕµÄÎÄ¼ş
  * @return
  */
 xfat_err_t xfile_close(xfile_t *file) {

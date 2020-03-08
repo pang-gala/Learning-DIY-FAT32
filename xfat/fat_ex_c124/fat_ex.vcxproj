@@ -108,7 +108,8 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <DisableSpecificWarnings>4819</DisableSpecificWarnings>
+      <DisableSpecificWarnings>
+      </DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -156,6 +157,7 @@
   <ItemGroup>
     <ClInclude Include="src\xdisk.h" />
     <ClInclude Include="src\xfat.h" />
+    <ClInclude Include="src\xtypes.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\driver.c" />

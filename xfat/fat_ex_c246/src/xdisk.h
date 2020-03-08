@@ -1,8 +1,8 @@
 /**
- * æœ¬æºç é…å¥—çš„è¯¾ç¨‹ä¸º - ä»0åˆ°1åŠ¨æ‰‹å†™FAT32æ–‡ä»¶ç³»ç»Ÿã€‚æ¯ä¸ªä¾‹ç¨‹å¯¹åº”ä¸€ä¸ªè¯¾æ—¶ï¼Œå°½å¯èƒ½æ³¨é‡Šã€‚
- * ä½œè€…ï¼šæè¿°é“œ
- * è¯¾ç¨‹ç½‘å€ï¼šhttp://01ketang.cc
- * ç‰ˆæƒå£°æ˜ï¼šæœ¬æºç éå¼€æºï¼ŒäºŒæ¬¡å¼€å‘ï¼Œæˆ–å…¶å®ƒå•†ç”¨å‰è¯·è”ç³»ä½œè€…ã€‚
+ * ±¾Ô´ÂëÅäÌ×µÄ¿Î³ÌÎª - ´Ó0µ½1¶¯ÊÖĞ´FAT32ÎÄ¼şÏµÍ³¡£Ã¿¸öÀı³Ì¶ÔÓ¦Ò»¸ö¿ÎÊ±£¬¾¡¿ÉÄÜ×¢ÊÍ¡£
+ * ×÷Õß£ºÀîÊöÍ­
+ * ¿Î³ÌÍøÖ·£ºhttp://01ketang.cc
+ * °æÈ¨ÉùÃ÷£º±¾Ô´Âë·Ç¿ªÔ´£¬¶ş´Î¿ª·¢£¬»òÆäËüÉÌÓÃÇ°ÇëÁªÏµ×÷Õß¡£
  */
 #ifndef XDISK_H
 #define	XDISK_H
@@ -10,12 +10,12 @@
 #include "xtypes.h"
 
 /**
- * æ–‡ä»¶ç³»ç»Ÿç±»å‹
+ * ÎÄ¼şÏµÍ³ÀàĞÍ
  */
 typedef enum {
-	FS_NOT_VALID = 0x00,            // æ— æ•ˆç±»å‹
+	FS_NOT_VALID = 0x00,            // ÎŞĞ§ÀàĞÍ
 	FS_FAT32 = 0x01,                // FAT32
-    FS_EXTEND = 0x05,               // æ‰©å±•åˆ†åŒº
+    FS_EXTEND = 0x05,               // À©Õ¹·ÖÇø
     FS_WIN95_FAT32_0 = 0xB,         // FAT32
     FS_WIN95_FAT32_1 = 0xC,         // FAT32
 }xfs_type_t;
@@ -23,39 +23,39 @@ typedef enum {
 #pragma pack(1)
 
 /**
- * MBRçš„åˆ†åŒºè¡¨é¡¹ç±»å‹
+ * MBRµÄ·ÖÇø±íÏîÀàĞÍ
  */
 typedef struct _mbr_part_t {
-    u8_t boot_active;               // åˆ†åŒºæ˜¯å¦æ´»åŠ¨
-	u8_t start_header;              // èµ·å§‹header
-	u16_t start_sector : 6;         // èµ·å§‹æ‰‡åŒº
-	u16_t start_cylinder : 10;	    // èµ·å§‹ç£é“
-	u8_t system_id;	                // æ–‡ä»¶ç³»ç»Ÿç±»å‹
-	u8_t end_header;                // ç»“æŸheader
-	u16_t end_sector : 6;           // ç»“æŸæ‰‡åŒº
-	u16_t end_cylinder : 10;        // ç»“æŸç£é“
-	u32_t relative_sectors;	        // ç›¸å¯¹äºè¯¥é©±åŠ¨å™¨å¼€å§‹çš„ç›¸å¯¹æ‰‡åŒºæ•°
-	u32_t total_sectors;            // æ€»çš„æ‰‡åŒºæ•°
+    u8_t boot_active;               // ·ÖÇøÊÇ·ñ»î¶¯
+	u8_t start_header;              // ÆğÊ¼header
+	u16_t start_sector : 6;         // ÆğÊ¼ÉÈÇø
+	u16_t start_cylinder : 10;	    // ÆğÊ¼´ÅµÀ
+	u8_t system_id;	                // ÎÄ¼şÏµÍ³ÀàĞÍ
+	u8_t end_header;                // ½áÊøheader
+	u16_t end_sector : 6;           // ½áÊøÉÈÇø
+	u16_t end_cylinder : 10;        // ½áÊø´ÅµÀ
+	u32_t relative_sectors;	        // Ïà¶ÔÓÚ¸ÃÇı¶¯Æ÷¿ªÊ¼µÄÏà¶ÔÉÈÇøÊı
+	u32_t total_sectors;            // ×ÜµÄÉÈÇøÊı
 }mbr_part_t;
 
-#define MBR_PRIMARY_PART_NR	    4   // 4ä¸ªåˆ†åŒºè¡¨
+#define MBR_PRIMARY_PART_NR	    4   // 4¸ö·ÖÇø±í
 
 /**
- * MBRåŒºåŸŸæè¿°ç»“æ„
+ * MBRÇøÓòÃèÊö½á¹¹
  */
 typedef  struct _mbr_t {
-	u8_t code[446];                 // å¼•å¯¼ä»£ç åŒº
+	u8_t code[446];                 // Òıµ¼´úÂëÇø
     mbr_part_t part_info[MBR_PRIMARY_PART_NR];
-	u8_t boot_sig[2];               // å¼•å¯¼æ ‡å¿—
+	u8_t boot_sig[2];               // Òıµ¼±êÖ¾
 }mbr_t;
 
 #pragma pack()
 
-// ç›¸å…³å‰ç½®å£°æ˜
+// Ïà¹ØÇ°ÖÃÉùÃ÷
 struct _xdisk_t;
 
 /**
- * ç£ç›˜é©±åŠ¨æ¥å£
+ * ´ÅÅÌÇı¶¯½Ó¿Ú
  */
 typedef struct _xdisk_driver_t {
     xfat_err_t (*open) (struct _xdisk_t * disk, void * init_data);
@@ -66,24 +66,24 @@ typedef struct _xdisk_driver_t {
 }xdisk_driver_t;
 
 /**
- * å­˜å‚¨è®¾å¤‡ç±»å‹
+ * ´æ´¢Éè±¸ÀàĞÍ
  */
 typedef struct _xdisk_t {
-    const char * name;              // è®¾å¤‡åç§°
-    u32_t sector_size;              // å—å¤§å°
-	u32_t total_sector;             // æ€»çš„å—æ•°é‡
-    xdisk_driver_t * driver;        // é©±åŠ¨æ¥å£
-    void * data;                    // è®¾å¤‡è‡ªå®šä¹‰å‚æ•°
+    const char * name;              // Éè±¸Ãû³Æ
+    u32_t sector_size;              // ¿é´óĞ¡
+	u32_t total_sector;             // ×ÜµÄ¿éÊıÁ¿
+    xdisk_driver_t * driver;        // Çı¶¯½Ó¿Ú
+    void * data;                    // Éè±¸×Ô¶¨Òå²ÎÊı
 }xdisk_t;
 
 /**
- * å­˜å‚¨è®¾å¤‡åˆ†åŒºç±»å‹
+ * ´æ´¢Éè±¸·ÖÇøÀàĞÍ
  */
 typedef struct _xdisk_part_t {
-	u32_t start_sector;             // ç›¸å¯¹äºæ•´ä¸ªç‰©ç†å­˜å‚¨åŒºå¼€å§‹çš„å—åºå·
-	u32_t total_sector;             // æ€»çš„å—æ•°é‡
-	xfs_type_t type;                // æ–‡ä»¶ç³»ç»Ÿç±»å‹
-	xdisk_t * disk;                 // å¯¹åº”çš„å­˜å‚¨è®¾å¤‡
+	u32_t start_sector;             // Ïà¶ÔÓÚÕû¸öÎïÀí´æ´¢Çø¿ªÊ¼µÄ¿éĞòºÅ
+	u32_t total_sector;             // ×ÜµÄ¿éÊıÁ¿
+	xfs_type_t type;                // ÎÄ¼şÏµÍ³ÀàĞÍ
+	xdisk_t * disk;                 // ¶ÔÓ¦µÄ´æ´¢Éè±¸
 }xdisk_part_t;
 
 xfat_err_t xdisk_open(xdisk_t *disk, const char * name, xdisk_driver_t * driver, void * init_data);

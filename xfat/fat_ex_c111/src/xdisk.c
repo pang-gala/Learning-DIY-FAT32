@@ -1,8 +1,8 @@
 /**
- * æœ¬æºç é…å¥—çš„è¯¾ç¨‹ä¸º - ä»Ž0åˆ°1åŠ¨æ‰‹å†™FAT32æ–‡ä»¶ç³»ç»Ÿã€‚æ¯ä¸ªä¾‹ç¨‹å¯¹åº”ä¸€ä¸ªè¯¾æ—¶ï¼Œå°½å¯èƒ½æ³¨é‡Šã€‚
- * ä½œè€…ï¼šæŽè¿°é“œ
- * è¯¾ç¨‹ç½‘å€ï¼šhttp://01ketang.cc
- * ç‰ˆæƒå£°æ˜Žï¼šæœ¬æºç éžå¼€æºï¼ŒäºŒæ¬¡å¼€å‘ï¼Œæˆ–å…¶å®ƒå•†ç”¨å‰è¯·è”ç³»ä½œè€…ã€‚
+ * ±¾Ô´ÂëÅäÌ×µÄ¿Î³ÌÎª - ´Ó0µ½1¶¯ÊÖÐ´FAT32ÎÄ¼þÏµÍ³¡£Ã¿¸öÀý³Ì¶ÔÓ¦Ò»¸ö¿ÎÊ±£¬¾¡¿ÉÄÜ×¢ÊÍ¡£
+ * ×÷Õß£ºÀîÊöÍ­
+ * ¿Î³ÌÍøÖ·£ºhttp://01ketang.cc
+ * °æÈ¨ÉùÃ÷£º±¾Ô´Âë·Ç¿ªÔ´£¬¶þ´Î¿ª·¢£¬»òÆäËüÉÌÓÃÇ°ÇëÁªÏµ×÷Õß¡£
  */
 #include "xfat.h"
 #include "xdisk.h"
@@ -10,9 +10,9 @@
 u8_t temp_buffer[512];
 
 /**
- * åˆå§‹åŒ–ç£ç›˜è®¾å¤‡
- * @param disk åˆå§‹åŒ–çš„è®¾å¤‡
- * @param name è®¾å¤‡çš„åç§°
+ * ³õÊ¼»¯´ÅÅÌÉè±¸
+ * @param disk ³õÊ¼»¯µÄÉè±¸
+ * @param name Éè±¸µÄÃû³Æ
  * @return
  */
 xfat_err_t xdisk_open(xdisk_t *disk, const char * name, xdisk_driver_t * driver, void * init_data) {
@@ -20,7 +20,7 @@ xfat_err_t xdisk_open(xdisk_t *disk, const char * name, xdisk_driver_t * driver,
 
     disk->driver = driver;
 
-    // åº•å±‚é©±åŠ¨åˆå§‹åŒ–
+    // µ×²ãÇý¶¯³õÊ¼»¯
     err = disk->driver->open(disk, init_data);
     if (err < 0) {
         return err;
@@ -31,7 +31,7 @@ xfat_err_t xdisk_open(xdisk_t *disk, const char * name, xdisk_driver_t * driver,
 }
 
 /**
- * å…³é—­å­˜å‚¨è®¾å¤‡
+ * ¹Ø±Õ´æ´¢Éè±¸
  * @param disk
  * @return
  */
@@ -47,11 +47,11 @@ xfat_err_t xdisk_close(xdisk_t * disk) {
 }
 
 /**
- * ä»Žè®¾å¤‡ä¸­è¯»å–æŒ‡å®šæ‰‡åŒºæ•°é‡çš„æ•°æ®
- * @param disk è¯»å–çš„ç£ç›˜
- * @param buffer è¯»å–æ•°æ®å­˜å‚¨çš„ç¼“å†²åŒº
- * @param start_sector è¯»å–çš„èµ·å§‹æ‰‡åŒº
- * @param count è¯»å–çš„æ‰‡åŒºæ•°é‡
+ * ´ÓÉè±¸ÖÐ¶ÁÈ¡Ö¸¶¨ÉÈÇøÊýÁ¿µÄÊý¾Ý
+ * @param disk ¶ÁÈ¡µÄ´ÅÅÌ
+ * @param buffer ¶ÁÈ¡Êý¾Ý´æ´¢µÄ»º³åÇø
+ * @param start_sector ¶ÁÈ¡µÄÆðÊ¼ÉÈÇø
+ * @param count ¶ÁÈ¡µÄÉÈÇøÊýÁ¿
  * @return
  */
 xfat_err_t xdisk_read_sector(xdisk_t *disk, u8_t *buffer, u32_t start_sector, u32_t count) {
@@ -66,11 +66,11 @@ xfat_err_t xdisk_read_sector(xdisk_t *disk, u8_t *buffer, u32_t start_sector, u3
 }
 
 /**
- * å‘è®¾å¤‡ä¸­å†™æŒ‡å®šçš„æ‰‡åŒºæ•°é‡çš„æ•°æ®
- * @param disk å†™å…¥çš„å­˜å‚¨è®¾å¤‡
- * @param buffer æ•°æ®æºç¼“å†²åŒº
- * @param start_sector å†™å…¥çš„èµ·å§‹æ‰‡åŒº
- * @param count å†™å…¥çš„æ‰‡åŒºæ•°
+ * ÏòÉè±¸ÖÐÐ´Ö¸¶¨µÄÉÈÇøÊýÁ¿µÄÊý¾Ý
+ * @param disk Ð´ÈëµÄ´æ´¢Éè±¸
+ * @param buffer Êý¾ÝÔ´»º³åÇø
+ * @param start_sector Ð´ÈëµÄÆðÊ¼ÉÈÇø
+ * @param count Ð´ÈëµÄÉÈÇøÊý
  * @return
  */
 xfat_err_t xdisk_write_sector(xdisk_t *disk, u8_t *buffer, u32_t start_sector, u32_t count) {
@@ -85,9 +85,9 @@ xfat_err_t xdisk_write_sector(xdisk_t *disk, u8_t *buffer, u32_t start_sector, u
 }
 
 /**
- * èŽ·å–è®¾å¤‡ä¸Šæ€»çš„åˆ†åŒºæ•°é‡
- * @param disk æŸ¥è¯¢çš„å­˜å‚¨è®¾å¤‡
- * @param count åˆ†åŒºæ•°å­˜å‚¨çš„ä½ç½®
+ * »ñÈ¡Éè±¸ÉÏ×ÜµÄ·ÖÇøÊýÁ¿
+ * @param disk ²éÑ¯µÄ´æ´¢Éè±¸
+ * @param count ·ÖÇøÊý´æ´¢µÄÎ»ÖÃ
  * @return
  */
 xfat_err_t xdisk_get_part_count(xdisk_t *disk, u32_t *count) {
@@ -95,13 +95,13 @@ xfat_err_t xdisk_get_part_count(xdisk_t *disk, u32_t *count) {
     mbr_part_t * part;
     u8_t * disk_buffer = temp_buffer;
 
-    // è¯»å–mbråŒº
+    // ¶ÁÈ¡mbrÇø
 	int err = xdisk_read_sector(disk, disk_buffer, 0, 1);
 	if (err < 0) {
 		return err;
 	}
 
-	// è§£æžç»Ÿè®¡ä¸»åˆ†åŒºçš„æ•°é‡ï¼Œå¹¶æ ‡è®°å‡ºå“ªä¸ªåˆ†åŒºæ˜¯æ‰©å±•åˆ†åŒº
+	// ½âÎöÍ³¼ÆÖ÷·ÖÇøµÄÊýÁ¿£¬²¢±ê¼Ç³öÄÄ¸ö·ÖÇøÊÇÀ©Õ¹·ÖÇø
 	part = ((mbr_t *)disk_buffer)->part_info;
 	for (i = 0; i < MBR_PRIMARY_PART_NR; i++, part++) {
 		if (part->system_id == FS_NOT_VALID) {

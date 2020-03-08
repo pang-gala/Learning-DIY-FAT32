@@ -1,8 +1,8 @@
 /**
- * æœ¬æºç é…å¥—çš„è¯¾ç¨‹ä¸º - ä»Ž0åˆ°1åŠ¨æ‰‹å†™FAT32æ–‡ä»¶ç³»ç»Ÿã€‚æ¯ä¸ªä¾‹ç¨‹å¯¹åº”ä¸€ä¸ªè¯¾æ—¶ï¼Œå°½å¯èƒ½æ³¨é‡Šã€‚
- * ä½œè€…ï¼šæŽè¿°é“œ
- * è¯¾ç¨‹ç½‘å€ï¼šhttp://01ketang.cc
- * ç‰ˆæƒå£°æ˜Žï¼šæœ¬æºç éžå¼€æºï¼ŒäºŒæ¬¡å¼€å‘ï¼Œæˆ–å…¶å®ƒå•†ç”¨å‰è¯·è”ç³»ä½œè€…ã€‚
+ * ±¾Ô´ÂëÅäÌ×µÄ¿Î³ÌÎª - ´Ó0µ½1¶¯ÊÖÐ´FAT32ÎÄ¼þÏµÍ³¡£Ã¿¸öÀý³Ì¶ÔÓ¦Ò»¸ö¿ÎÊ±£¬¾¡¿ÉÄÜ×¢ÊÍ¡£
+ * ×÷Õß£ºÀîÊöÍ­
+ * ¿Î³ÌÍøÖ·£ºhttp://01ketang.cc
+ * °æÈ¨ÉùÃ÷£º±¾Ô´Âë·Ç¿ªÔ´£¬¶þ´Î¿ª·¢£¬»òÆäËüÉÌÓÃÇ°ÇëÁªÏµ×÷Õß¡£
  */
 #ifndef XFAT_H
 #define XFAT_H
@@ -12,50 +12,50 @@
 #pragma pack(1)
 
 /**
- * FATæ–‡ä»¶ç³»ç»Ÿçš„BPBç»“æž„
+ * FATÎÄ¼þÏµÍ³µÄBPB½á¹¹
  */
 typedef struct _bpb_t {
-    u8_t BS_jmpBoot[3];                 // è·³è½¬ä»£ç 
-    u8_t BS_OEMName[8];                 // OEMåç§°
-    u16_t BPB_BytsPerSec;               // æ¯æ‰‡åŒºå­—èŠ‚æ•°
-    u8_t BPB_SecPerClus;                // æ¯ç°‡æ‰‡åŒºæ•°
-    u16_t BPB_RsvdSecCnt;               // ä¿ç•™åŒºæ‰‡åŒºæ•°
-    u8_t BPB_NumFATs;                   // FATè¡¨é¡¹æ•°
-    u16_t BPB_RootEntCnt;               // æ ¹ç›®å½•é¡¹ç›®æ•°
-    u16_t BPB_TotSec16;                 // æ€»çš„æ‰‡åŒºæ•°
-    u8_t BPB_Media;                     // åª’ä½“ç±»åž‹
-    u16_t BPB_FATSz16;                  // FATè¡¨é¡¹å¤§å°
-    u16_t BPB_SecPerTrk;                // æ¯ç£é“æ‰‡åŒºæ•°
-    u16_t BPB_NumHeads;                 // ç£å¤´æ•°
-    u32_t BPB_HiddSec;                  // éšè—æ‰‡åŒºæ•°
-    u32_t BPB_TotSec32;                 // æ€»çš„æ‰‡åŒºæ•°
+    u8_t BS_jmpBoot[3];                 // Ìø×ª´úÂë
+    u8_t BS_OEMName[8];                 // OEMÃû³Æ
+    u16_t BPB_BytsPerSec;               // Ã¿ÉÈÇø×Ö½ÚÊý
+    u8_t BPB_SecPerClus;                // Ã¿´ØÉÈÇøÊý
+    u16_t BPB_RsvdSecCnt;               // ±£ÁôÇøÉÈÇøÊý
+    u8_t BPB_NumFATs;                   // FAT±íÏîÊý
+    u16_t BPB_RootEntCnt;               // ¸ùÄ¿Â¼ÏîÄ¿Êý
+    u16_t BPB_TotSec16;                 // ×ÜµÄÉÈÇøÊý
+    u8_t BPB_Media;                     // Ã½ÌåÀàÐÍ
+    u16_t BPB_FATSz16;                  // FAT±íÏî´óÐ¡
+    u16_t BPB_SecPerTrk;                // Ã¿´ÅµÀÉÈÇøÊý
+    u16_t BPB_NumHeads;                 // ´ÅÍ·Êý
+    u32_t BPB_HiddSec;                  // Òþ²ØÉÈÇøÊý
+    u32_t BPB_TotSec32;                 // ×ÜµÄÉÈÇøÊý
 } bpb_t;
 
 /**
- * BPBä¸­çš„FAT32ç»“æž„
+ * BPBÖÐµÄFAT32½á¹¹
  */
 typedef struct _fat32_hdr_t {
-    u32_t BPB_FATSz32;                  // FATè¡¨çš„å­—èŠ‚å¤§å°
-    u16_t BPB_ExtFlags;                 // æ‰©å±•æ ‡è®°
-    u16_t BPB_FSVer;                    // ç‰ˆæœ¬å·
-    u32_t BPB_RootClus;                 // æ ¹ç›®å½•çš„ç°‡å·
-    u16_t BPB_FsInfo;                   // fsInfoçš„æ‰‡åŒºå·
-    u16_t BPB_BkBootSec;                // å¤‡ä»½æ‰‡åŒº
+    u32_t BPB_FATSz32;                  // FAT±íµÄ×Ö½Ú´óÐ¡
+    u16_t BPB_ExtFlags;                 // À©Õ¹±ê¼Ç
+    u16_t BPB_FSVer;                    // °æ±¾ºÅ
+    u32_t BPB_RootClus;                 // ¸ùÄ¿Â¼µÄ´ØºÅ
+    u16_t BPB_FsInfo;                   // fsInfoµÄÉÈÇøºÅ
+    u16_t BPB_BkBootSec;                // ±¸·ÝÉÈÇø
     u8_t BPB_Reserved[12];
-    u8_t BS_DrvNum;                     // è®¾å¤‡å·
+    u8_t BS_DrvNum;                     // Éè±¸ºÅ
     u8_t BS_Reserved1;
-    u8_t BS_BootSig;                    // æ‰©å±•æ ‡è®°
-    u32_t BS_VolID;                     // å·åºåˆ—å·
-    u8_t BS_VolLab[11];                 // å·æ ‡åç§°
-    u8_t BS_FileSysType[8];             // æ–‡ä»¶ç±»åž‹åç§°
+    u8_t BS_BootSig;                    // À©Õ¹±ê¼Ç
+    u32_t BS_VolID;                     // ¾íÐòÁÐºÅ
+    u8_t BS_VolLab[11];                 // ¾í±êÃû³Æ
+    u8_t BS_FileSysType[8];             // ÎÄ¼þÀàÐÍÃû³Æ
 } fat32_hdr_t;
 
 /**
- * å®Œæ•´çš„DBRç±»åž‹
+ * ÍêÕûµÄDBRÀàÐÍ
  */
 typedef struct _dbr_t {
-    bpb_t bpb;                          // BPBç»“æž„
-    fat32_hdr_t fat32;                  // FAT32ç»“æž„
+    bpb_t bpb;                          // BPB½á¹¹
+    fat32_hdr_t fat32;                  // FAT32½á¹¹
 } dbr_t;
 
 #pragma pack()

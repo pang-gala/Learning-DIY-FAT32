@@ -21,6 +21,9 @@
     <ClInclude Include="src\xfat.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="src\xtypes.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\driver.c">

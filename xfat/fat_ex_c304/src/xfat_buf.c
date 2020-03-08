@@ -1,14 +1,14 @@
 /**
- * æœ¬æºç é…å¥—çš„è¯¾ç¨‹ä¸º - ä»0åˆ°1åŠ¨æ‰‹å†™FAT32æ–‡ä»¶ç³»ç»Ÿã€‚æ¯ä¸ªä¾‹ç¨‹å¯¹åº”ä¸€ä¸ªè¯¾æ—¶ï¼Œå°½å¯èƒ½æ³¨é‡Šã€‚
- * ä½œè€…ï¼šæè¿°é“œ
- * è¯¾ç¨‹ç½‘å€ï¼šhttp://01ketang.cc
- * ç‰ˆæƒå£°æ˜ï¼šæœ¬æºç éå¼€æºï¼ŒäºŒæ¬¡å¼€å‘ï¼Œæˆ–å…¶å®ƒå•†ç”¨å‰è¯·è”ç³»ä½œè€…ã€‚
+ * ±¾Ô´ÂëÅäÌ×µÄ¿Î³ÌÎª - ´Ó0µ½1¶¯ÊÖĞ´FAT32ÎÄ¼şÏµÍ³¡£Ã¿¸öÀı³Ì¶ÔÓ¦Ò»¸ö¿ÎÊ±£¬¾¡¿ÉÄÜ×¢ÊÍ¡£
+ * ×÷Õß£ºÀîÊöÍ­
+ * ¿Î³ÌÍøÖ·£ºhttp://01ketang.cc
+ * °æÈ¨ÉùÃ÷£º±¾Ô´Âë·Ç¿ªÔ´£¬¶ş´Î¿ª·¢£¬»òÆäËüÉÌÓÃÇ°ÇëÁªÏµ×÷Õß¡£
  */
 #include "xfat_buf.h"
 #include "xdisk.h"
 
 /**
- * è·å–bufçš„çŠ¶æ€
+ * »ñÈ¡bufµÄ×´Ì¬
  * @param buf
  * @param state
  */
@@ -41,7 +41,7 @@ static xfat_err_t bpool_moveto_first(xfat_bpool_t* pool, xfat_buf_t* buf) {
 
 
 /**
- * ä»ç¼“å†²åˆ—è¡¨ä¸­åˆ†é…ä¸€ä¸ªç¼“å­˜å—
+ * ´Ó»º³åÁĞ±íÖĞ·ÖÅäÒ»¸ö»º´æ¿é
  * @param pool
  * @param sector_no
  * @return
@@ -56,8 +56,8 @@ static xfat_err_t bpool_find_buf(xfat_bpool_t* pool, u32_t sector_no, xfat_buf_t
         return FS_ERR_NO_BUFFER;
     }
 
-    // ä»è¡¨å¤´å¼€å§‹æŸ¥æ‰¾ï¼Œæ‰¾åˆ°ç›¸åŒæ‰‡åŒºçš„å—ï¼Œæˆ–è€…æ‰¾åˆ°ç©ºé—²å—
-    // æˆ–è€…ä»¥ä¸Šéƒ½æ²¡æœ‰ï¼Œæ‰¾åˆ°æœ€ä¹…æœªè¢«ä½¿ç”¨çš„å—ï¼Œæ­¤æ—¶è‚¯å®šæ˜¯é˜Ÿåˆ—æœ€åä¸€å—
+    // ´Ó±íÍ·¿ªÊ¼²éÕÒ£¬ÕÒµ½ÏàÍ¬ÉÈÇøµÄ¿é£¬»òÕßÕÒµ½¿ÕÏĞ¿é
+    // »òÕßÒÔÉÏ¶¼Ã»ÓĞ£¬ÕÒµ½×î¾ÃÎ´±»Ê¹ÓÃµÄ¿é£¬´ËÊ±¿Ï¶¨ÊÇ¶ÓÁĞ×îºóÒ»¿é
     r_buf = pool->first;
     while (size--) {
         switch (xfat_buf_state(r_buf)) {
@@ -89,7 +89,7 @@ static xfat_err_t bpool_find_buf(xfat_bpool_t* pool, u32_t sector_no, xfat_buf_t
 }
 
 /**
- * è·å–æŒ‡å®šobjå¯¹åº”çš„ç¼“å†²æ± 
+ * »ñÈ¡Ö¸¶¨obj¶ÔÓ¦µÄ»º³å³Ø
  */
 static xfat_bpool_t* get_obj_bpool(xfat_obj_t* obj) {
     if (obj->type == XFAT_OBJ_DISK) {
@@ -101,7 +101,7 @@ static xfat_bpool_t* get_obj_bpool(xfat_obj_t* obj) {
 }
 
 /**
- * è·å–objç›¸åº”çš„disk
+ * »ñÈ¡objÏàÓ¦µÄdisk
  */
 static xdisk_t * get_obj_disk(xfat_obj_t* obj) {
     xdisk_t* xdisk = (xdisk_t*)0;
@@ -115,7 +115,7 @@ static xdisk_t * get_obj_disk(xfat_obj_t* obj) {
 }
 
 /**
- * åˆå§‹åŒ–ç£ç›˜ç¼“å­˜åŒº
+ * ³õÊ¼»¯´ÅÅÌ»º´æÇø
  * @param pool
  * @param disk
  * @param buffer
@@ -126,7 +126,7 @@ xfat_err_t xfat_bpool_init(xfat_obj_t* obj, u32_t sector_size, u8_t* buffer, u32
     u32_t buf_count = buf_size / (sizeof(xfat_buf_t) + sector_size);
     u32_t i;
     xfat_buf_t * buf_start = (xfat_buf_t *)buffer;
-    u8_t * sector_buf_start = buffer + buf_count * sizeof(xfat_buf_t);      // è¿™é‡Œæœ€å¥½åšä¸‹å¯¹é½å¤„ç†
+    u8_t * sector_buf_start = buffer + buf_count * sizeof(xfat_buf_t);      // ÕâÀï×îºÃ×öÏÂ¶ÔÆë´¦Àí
     xfat_buf_t* buf;
 
     xfat_bpool_t* pool = get_obj_bpool(obj);
@@ -140,7 +140,7 @@ xfat_err_t xfat_bpool_init(xfat_obj_t* obj, u32_t sector_size, u8_t* buffer, u32
         return FS_ERR_OK;
     }
 
-    // å¤´æ’æ³•å»ºç«‹é“¾è¡¨
+    // Í·²å·¨½¨Á¢Á´±í
     buf = (xfat_buf_t*)buf_start++;
     buf->pre = buf->next = buf;
     buf->buf = sector_buf_start;
@@ -166,7 +166,7 @@ xfat_err_t xfat_bpool_init(xfat_obj_t* obj, u32_t sector_size, u8_t* buffer, u32
 }
 
 /**
- * ä»¥ç¼“å†²æ–¹å¼è¯»å–ç£ç›˜çš„æŒ‡å®šæ‰‡åŒº
+ * ÒÔ»º³å·½Ê½¶ÁÈ¡´ÅÅÌµÄÖ¸¶¨ÉÈÇø
  * @param disk
  * @param buf
  * @param sector_no
@@ -192,7 +192,7 @@ xfat_err_t xfat_bpool_read_sector(xfat_obj_t* obj, xfat_buf_t** buf, u32_t secto
         return FS_ERR_OK;
     }
 
-    // ä¸åŒæ‰‡åŒº
+    // ²»Í¬ÉÈÇø
     switch (xfat_buf_state(r_buf)) {
     case XFAT_BUF_STATE_FREE:
     case XFAT_BUF_STATE_CLEAN:
@@ -216,7 +216,7 @@ xfat_err_t xfat_bpool_read_sector(xfat_obj_t* obj, xfat_buf_t** buf, u32_t secto
 }
 
 /**
- * ä¸ºå·¥ä½œç¼“å­˜åˆ†é…ç©ºé—´
+ * Îª¹¤×÷»º´æ·ÖÅä¿Õ¼ä
  * @param disk
  * @param buf
  * @return
@@ -241,7 +241,7 @@ xfat_err_t xfat_bpool_alloc(xfat_obj_t* obj, xfat_buf_t** buf, u32_t sector_no) 
         return FS_ERR_OK;
     }
 
-    // ä¸åŒæ‰‡åŒº
+    // ²»Í¬ÉÈÇø
     switch (xfat_buf_state(r_buf)) {
     case XFAT_BUF_STATE_FREE:
     case XFAT_BUF_STATE_CLEAN:
@@ -260,7 +260,7 @@ xfat_err_t xfat_bpool_alloc(xfat_obj_t* obj, xfat_buf_t** buf, u32_t sector_no) 
 }
 
 /**
- * ä»¥ç¼“å†²æ–¹å¼å†™å–ç£ç›˜çš„æŒ‡å®šæ‰‡åŒº
+ * ÒÔ»º³å·½Ê½Ğ´È¡´ÅÅÌµÄÖ¸¶¨ÉÈÇø
  * @param disk
  * @param buf
  * @param sector_no
@@ -282,7 +282,7 @@ xfat_err_t xfat_bpool_write_sector(xfat_obj_t* obj, xfat_buf_t* buf, u8_t is_thr
 }
 
 /**
- * å›ä¸ç¼“å†²åŒºä¸­æ•°æ®å—
+ * »ØÓë»º³åÇøÖĞÊı¾İ¿é
  * @param disk
  * @return
  */

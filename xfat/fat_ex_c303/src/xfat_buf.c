@@ -1,14 +1,14 @@
 /**
- * æœ¬æºç é…å¥—çš„è¯¾ç¨‹ä¸º - ä»Ž0åˆ°1åŠ¨æ‰‹å†™FAT32æ–‡ä»¶ç³»ç»Ÿã€‚æ¯ä¸ªä¾‹ç¨‹å¯¹åº”ä¸€ä¸ªè¯¾æ—¶ï¼Œå°½å¯èƒ½æ³¨é‡Šã€‚
- * ä½œè€…ï¼šæŽè¿°é“œ
- * è¯¾ç¨‹ç½‘å€ï¼šhttp://01ketang.cc
- * ç‰ˆæƒå£°æ˜Žï¼šæœ¬æºç éžå¼€æºï¼ŒäºŒæ¬¡å¼€å‘ï¼Œæˆ–å…¶å®ƒå•†ç”¨å‰è¯·è”ç³»ä½œè€…ã€‚
+ * ±¾Ô´ÂëÅäÌ×µÄ¿Î³ÌÎª - ´Ó0µ½1¶¯ÊÖÐ´FAT32ÎÄ¼þÏµÍ³¡£Ã¿¸öÀý³Ì¶ÔÓ¦Ò»¸ö¿ÎÊ±£¬¾¡¿ÉÄÜ×¢ÊÍ¡£
+ * ×÷Õß£ºÀîÊöÍ­
+ * ¿Î³ÌÍøÖ·£ºhttp://01ketang.cc
+ * °æÈ¨ÉùÃ÷£º±¾Ô´Âë·Ç¿ªÔ´£¬¶þ´Î¿ª·¢£¬»òÆäËüÉÌÓÃÇ°ÇëÁªÏµ×÷Õß¡£
  */
 #include "xfat_buf.h"
 #include "xdisk.h"
 
 /**
- * èŽ·å–bufçš„çŠ¶æ€
+ * »ñÈ¡bufµÄ×´Ì¬
  * @param buf
  * @param state
  */
@@ -18,7 +18,7 @@ void xfat_buf_set_state(xfat_buf_t * buf, u32_t state) {
 }
 
 /**
- * èŽ·å–æŒ‡å®šobjå¯¹åº”çš„ç¼“å†²æ± 
+ * »ñÈ¡Ö¸¶¨obj¶ÔÓ¦µÄ»º³å³Ø
  */
 static xfat_bpool_t* get_obj_bpool(xfat_obj_t* obj) {
     if (obj->type == XFAT_OBJ_DISK) {
@@ -30,7 +30,7 @@ static xfat_bpool_t* get_obj_bpool(xfat_obj_t* obj) {
 }
 
 /**
- * åˆå§‹åŒ–ç£ç›˜ç¼“å­˜åŒº
+ * ³õÊ¼»¯´ÅÅÌ»º´æÇø
  * @param pool
  * @param disk
  * @param buffer
@@ -41,7 +41,7 @@ xfat_err_t xfat_bpool_init(xfat_obj_t* obj, u32_t sector_size, u8_t* buffer, u32
     u32_t buf_count = buf_size / (sizeof(xfat_buf_t) + sector_size);
     u32_t i;
     xfat_buf_t * buf_start = (xfat_buf_t *)buffer;
-    u8_t * sector_buf_start = buffer + buf_count * sizeof(xfat_buf_t);      // è¿™é‡Œæœ€å¥½åšä¸‹å¯¹é½å¤„ç†
+    u8_t * sector_buf_start = buffer + buf_count * sizeof(xfat_buf_t);      // ÕâÀï×îºÃ×öÏÂ¶ÔÆë´¦Àí
     xfat_buf_t* buf;
 
     xfat_bpool_t* pool = get_obj_bpool(obj);
@@ -55,7 +55,7 @@ xfat_err_t xfat_bpool_init(xfat_obj_t* obj, u32_t sector_size, u8_t* buffer, u32
         return FS_ERR_OK;
     }
 
-    // å¤´æ’æ³•å»ºç«‹é“¾è¡¨
+    // Í·²å·¨½¨Á¢Á´±í
     buf = (xfat_buf_t*)buf_start++;
     buf->pre = buf->next = buf;
     buf->buf = sector_buf_start;
