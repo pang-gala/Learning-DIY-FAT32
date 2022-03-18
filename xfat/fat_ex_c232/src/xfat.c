@@ -151,7 +151,7 @@ xfat_err_t read_cluster(xfat_t *xfat, u8_t *buffer, u32_t cluster, u32_t count) 
 /**
  * 将指定的name按FAT 8+3命名转换
  * @param dest_name
- * @param my_name
+ * @param my_name 要转换的文件名
  * @return
  */
 static xfat_err_t to_sfn(char* dest_name, const char* my_name) {
@@ -240,23 +240,27 @@ static const char * skip_first_path_sep (const char * path) {
 }
 
 /**
- * 获取子路径
- * @param dir_path 上一级路径
- * @return
+ * 获取子路径：如输入"/abc/def/456.txt"，则返回”def/456.txt“
+ * @param dir_path 包含上一级名称的路径
+ * @return 
  */
 const char * get_child_path(const char *dir_path) {
+
+    // 举例：此时为 "/abc/456.txt"
     const char * c = skip_first_path_sep(dir_path);
 
-    // 跳过父目录
+    // 举例：此时为 "abc/456.txt"
+    // 跳过父目录，不含父目录后面的分隔符
     while ((*c != '\0') && !is_path_sep(*c)) {
-        c++;
+        c++; 
     }
 
+    // 举例：此时为 "/456.txt",则返回"456.txt"；如果已经啥都没了，则返回指向空的指针；
     return (*c == '\0') ? (const char *)0 : c + 1;
 }
 
 /**
- * 解析diritem，获取文件类型
+ * 获取当前文件的类型：传入其目录项指针，返回类型的枚举值
  * @param diritem 需解析的diritem
  * @return
  */
@@ -275,48 +279,50 @@ static xfile_type_t get_file_type(const diritem_t *diritem) {
 }
 
 /**
- * 获取diritem的文件起始簇号
+ * 获取一个目录项记录的的文件的起始簇号
+ * 原理：传入一个目录项，使用目录项的高低16位记录，计算那个文件的起始簇
  * @param item
  * @return
  */
 static u32_t get_diritem_cluster (diritem_t * item) {
-    return (item->DIR_FstClusHI << 16) | item->DIR_FstClusL0;
+    return (item->DIR_FstClusHI << 16) | item->DIR_FstClusL0; 
+    // 簇号由高低16位求和获得，等价于这里将DIR_FstClusHI << 16之后和DIR_FstClusL0做或运算；
 }
 
 /**
  * 查找指定dir_item，并返回相应的结构
- * @param xfat xfat结构
- * @param dir_cluster dir_item所在的目录数据簇号
- * @param cluster_offset 簇中的偏移
- * @param move_bytes 查找到相应的item项后，相对于最开始传入的偏移值，移动了多少个字节才定位到该item
- * @param path 文件或目录的完整路径
- * @param r_diritem 查找到的diritem项
+ * @param xfat 传入的，xfat结构
+ * @param dir_cluster 传入的，要查找的file所在的目录数据所在的簇号（可能是目录文件中的某一簇）
+ * @param cluster_offset 簇中的偏移——————————————————————————？？？？？？？？
+ * @param move_bytes 返回的，查找到相应的item项后，相对于最开始传入的偏移值，移动了多少个字节才定位到该item
+ * @param path 传入的，文件或目录的完整路径————处理时要截断前面的吗？？？——————————————————————？？？？？？？？
+ * @param r_diritem 返回的，查找到的diritem项，如果指向为0，说明路径不对，当前这一级根本没有这个文件或者目录文件
  * @return
  */
 static xfat_err_t locate_file_dir_item(xfat_t *xfat, u32_t *dir_cluster, u32_t *cluster_offset,
                                     const char *path, u32_t *move_bytes, diritem_t **r_diritem) {
-    u32_t curr_cluster = *dir_cluster;
-    xdisk_t * xdisk = xfat_get_disk(xfat);
-    u32_t initial_sector = to_sector(xdisk, *cluster_offset);
-    u32_t initial_offset = to_sector_offset(xdisk, *cluster_offset);
-    u32_t r_move_bytes = 0;
+    u32_t curr_cluster = *dir_cluster;// —————————？？？？？？？？
+    xdisk_t * xdisk = xfat_get_disk(xfat);// —————————？？？？？？？？
+    u32_t initial_sector = to_sector(xdisk, *cluster_offset);// —————————？？？？？？？？
+    u32_t initial_offset = to_sector_offset(xdisk, *cluster_offset);// —————————？？？？？？？？
+    u32_t r_move_bytes = 0;// —————————？？？？？？？？
 
     // cluster
     do {
         u32_t i;
         xfat_err_t err;
-        u32_t start_sector = cluster_fist_sector(xfat, curr_cluster);
+        u32_t start_sector = cluster_fist_sector(xfat, curr_cluster); // curr_cluster 的开始扇区
 
-        for (i = initial_sector; i < xfat->sec_per_cluster; i++) {
+        for (i = initial_sector; i < xfat->sec_per_cluster; i++) { // 从initial_sector这个扇区开始，遍历直到一个簇结尾，
             u32_t j;
 
-            err = xdisk_read_sector(xdisk, temp_buffer, start_sector + i, 1);
+            err = xdisk_read_sector(xdisk, temp_buffer, start_sector + i, 1);// 读取initial_sector这个扇区到缓存
             if (err < 0) {
                 return err;
             }
 
-            for (j = initial_offset / sizeof(diritem_t); j < xdisk->sector_size / sizeof(diritem_t); j++) {
-                diritem_t *dir_item = ((diritem_t *) temp_buffer) + j;
+            for (j = initial_offset / sizeof(diritem_t); j < xdisk->sector_size / sizeof(diritem_t); j++) { // 从initial_offset对应的那个目录项开始，遍历到整个扇区结尾
+                diritem_t *dir_item = ((diritem_t *) temp_buffer) + j;// 这nm啥，能不能好好写
 
                 if (dir_item->DIR_Name[0] == DIRITEM_NAME_END) {
                     return FS_ERR_EOF;
@@ -357,56 +363,59 @@ static xfat_err_t locate_file_dir_item(xfat_t *xfat, u32_t *dir_cluster, u32_t *
 }
 
 /**
- * 打开指定dir_cluster开始的簇链中包含的子文件。
- * 如果path为空，则以dir_cluster创建一个打开的目录对像
+ * 传入一个目录文件的簇地址dir_cluster，以此目录文件作为根节点，层层向下查询path所指向的那个目标文件，将那个文件的解析结果存入file返回。
+ * 如果path为空，则返回的file代表的是当前dir_cluster所在目录文件本身。
+ * 原理：
  * @param xfat xfat结构
- * @param dir_cluster 查找的顶层目录的起始簇链
- * @param file 打开的文件file结构
+ * @param dir_cluster 目录的起始簇链，从这个簇所存放的那个目录文件为根节点，向下查找目标文件
+ * @param file 返回的文件file结构，当找到目标文件后，将会填写；如果path为空，则填写的是根目录这个文件的内容；（类似默认构造函数）
  * @param path 以dir_cluster所对应的目录为起点的完整路径
  * @return
  */
 static xfat_err_t open_sub_file (xfat_t * xfat, u32_t dir_cluster, xfile_t * file, const char * path) {
     u32_t parent_cluster = dir_cluster;
-    u32_t parent_cluster_offset = 0;
+    u32_t parent_cluster_offset = 0; // 这是个啥？？？？？？？————————————————————————————————————————————
 
-    path = skip_first_path_sep(path);
+    path = skip_first_path_sep(path);// 跳过path开头的分隔符'\\'或'/'
 
     // 如果传入路径不为空，则查看子目录
-    // 否则，直接认为dir_cluster指向的是一个目录，用于打开根目录
-    if ((path != 0) && (*path != '\0')) {
-        diritem_t * dir_item = (diritem_t *)0;
+    // 否则，直接认为dir_cluster指向的是一个目录，用于打开根目录————path为空的时候直接打开根目录数据返回
+    if ((path != 0) && (*path != '\0')) { // 指针指向0和null，有区别吗？——————————————————————————————
+        diritem_t * dir_item = (diritem_t *)0;// 初始化指针，指向地址0
         u32_t file_start_cluster = 0;
         const char * curr_path = path;
 
-       // 找到path对应的起始簇
+       // 循环深入，直到找到path指向的目标文件的起始簇
         while (curr_path != (const char *)0) {
             u32_t moved_bytes = 0;
             dir_item = (diritem_t *)0;
 
-            // 在父目录下查找指定路径对应的文件
+            // 在父目录下查找指定路径对应的文件—————
             xfat_err_t err = locate_file_dir_item(xfat, &parent_cluster, &parent_cluster_offset,
                                                 curr_path, &moved_bytes, &dir_item);
             if (err < 0) {
                 return err;
             }
 
-            if (dir_item == (diritem_t *)0) {
+            if (dir_item == (diritem_t *)0) { // 找到的item指向位0，表示没有找到文件。（说明路径不对，根本没有找到这个文件或者目录文件）
                 return FS_ERR_NONE;
             }
 
-            curr_path = get_child_path(curr_path);
+            curr_path = get_child_path(curr_path);  // 剥离path中的最外层目录部分——相当于进到其指向的下一层目录中，此时有可能已经指向文件了，这时这一行函数会返回地址0
             if (curr_path != (const char *)0) {
+                // 当前curr_path != 0，说明目标文件还在更深的地方，需要继续下一次循环前进
                 parent_cluster = get_diritem_cluster(dir_item);
                 parent_cluster_offset = 0;
             } else {
-                file_start_cluster = get_diritem_cluster(dir_item);;
+                // 当前curr_path = 0，说明dir_item已经指向了记录着目标文件的目录项
+                file_start_cluster = get_diritem_cluster(dir_item);
             }
         }
 
-        file->size = dir_item->DIR_FileSize;
-        file->type = get_file_type(dir_item);
-        file->start_cluster = file_start_cluster;
-        file->curr_cluster = file_start_cluster;
+        file->size = dir_item->DIR_FileSize; // 获取大小
+        file->type = get_file_type(dir_item);// 获取当前文件的类型，传入其目录项指针，返回类型
+        file->start_cluster = file_start_cluster;// 起始簇，让其指向。。。。
+        file->curr_cluster = file_start_cluster;// 当前簇，此时让其指向？？？？？
     } else {
         file->size = 0;
         file->type = FAT_DIR;
@@ -414,7 +423,8 @@ static xfat_err_t open_sub_file (xfat_t * xfat, u32_t dir_cluster, xfile_t * fil
         file->curr_cluster = parent_cluster;
     }
 
-    file->xfat = xfat;
+    // 其他的一些属性：
+    file->xfat = xfat; 
     file->pos = 0;
     file->err = FS_ERR_OK;
     return FS_ERR_OK;

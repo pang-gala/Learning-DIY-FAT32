@@ -156,16 +156,16 @@ typedef enum _xfile_type_t {
  * 文件类型
  */
 typedef struct _xfile_t {
-    xfat_t *xfat;                   // 对应的xfat结构
+    xfat_t *xfat;                   // 当前file所属的xfat结构
 
     u32_t size;                     // 文件大小
     u16_t attr;                     // 文件属性
     xfile_type_t type;              // 文件类型
-    u32_t pos;                      // 当前位置
-    xfat_err_t err;                  // 上一次的操作错误码
+    u32_t pos;                      // 当前位置——————————————？？？？？？？？？
+    xfat_err_t err;                 // 上一次的操作错误码
 
     u32_t start_cluster;            // 数据区起始簇号
-    u32_t curr_cluster;             // 当前簇号
+    u32_t curr_cluster;             // 当前簇号——————————————？？？？？？？？？
 } xfile_t;
 
 xfat_err_t is_cluster_valid(u32_t cluster);
