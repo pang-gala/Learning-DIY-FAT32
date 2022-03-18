@@ -155,13 +155,13 @@ xfat_err_t read_cluster(xfat_t *xfat, u8_t *buffer, u32_t cluster, u32_t count) 
 static xfat_err_t open_sub_file (xfat_t * xfat, u32_t dir_cluster, xfile_t * file, const char * path) {
     file->size = 0;
     file->type = FAT_DIR;
-    file->start_cluster = dir_cluster;
+    file->start_cluster = dir_cluster; // 根目录的起始簇，就是传入的顶层目录的起始簇链
     file->curr_cluster = dir_cluster;
 
     file->xfat = xfat;
     file->pos = 0;
     file->err = FS_ERR_OK;
-    file->attr = 0;
+    file->attr = 0; // 根目录的attr，竟然是0x00000000？？？？
     return FS_ERR_OK;
 }
 

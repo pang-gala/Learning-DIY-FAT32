@@ -236,7 +236,7 @@ int fs_open_test (void) {
 
     printf("fs_open test...\n");
 
-    err = xfile_open(&xfat, &file, "/");
+    err = xfile_open(&xfat, &file, "/"); // 打开fat对应的分区的根目录这个文件
     if (err) {
         printf("open file failed %s!\n", "/");
         return -1;

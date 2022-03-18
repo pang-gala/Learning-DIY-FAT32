@@ -61,8 +61,8 @@ typedef struct _dbr_t {
 
 #define CLUSTER_INVALID                 0x0FFFFFFF          // 无效的簇号
 
-#define DIRITEM_NAME_FREE               0xE5                // 目录项空闲名标记
-#define DIRITEM_NAME_END                0x00                // 目录项结束名标记
+#define DIRITEM_NAME_FREE               0xE5                // DIR_Name[0] == 0xE5, 则此目录为空闲 (目录项不包含文件和目录) 
+#define DIRITEM_NAME_END                0x00                // DIR_Name[0] == 0x00，表示此目录为空闲 (同 0xE5), 并且此后的目录项都是空的
 
 #define DIRITEM_ATTR_READ_ONLY          0x01                // 目录项属性：只读
 #define DIRITEM_ATTR_HIDDEN             0x02                // 目录项属性：隐藏
@@ -110,14 +110,14 @@ typedef struct _diritem_t {
 } diritem_t;
 
 /**
- * 簇类型
+ * FAT32 表项
  */
 typedef union _cluster32_t {
     struct {
-        u32_t next : 28;                // 下一簇
-        u32_t reserved : 4;             // 保留，为0
+        u32_t next : 28;                // 下一簇，占据前28位的内容，即00000000 ~ 0FFFFFFF
+        u32_t reserved : 4;             // 保留，为0，表示的内容一般和系统格式化有关，和下一簇无关
     } s;
-    u32_t v;
+    u32_t v; // 这是32位元素的象征，似乎可以用这个取出这个所有的内容？？不知道干什么的。————————————————————
 } cluster32_t;
 
 #pragma pack()
@@ -134,7 +134,7 @@ typedef struct _xfat_t {
     u32_t cluster_byte_size;            // 每簇字节数
     u32_t total_sectors;                // 总扇区数
 
-    u8_t * fat_buffer;             // FAT表项缓冲
+    u8_t * fat_buffer;             // FAT表项缓冲————存储了当前分区那个fat表的所有fat表项？
     xdisk_part_t * disk_part;           // 对应的分区信息
 } xfat_t;
 

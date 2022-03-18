@@ -69,7 +69,7 @@ xfat_err_t xfat_open(xfat_t * xfat, xdisk_part_t * xdisk_part) {
 
     // 先一次性全部读取FAT表: todo: 优化
     xfat->fat_buffer = (u8_t *)malloc(xfat->fat_tbl_sectors * xdisk->sector_size);
-    err = xdisk_read_sector(xdisk, (u8_t *)xfat->fat_buffer, xfat->fat_start_sector, xfat->fat_tbl_sectors);
+    err = xdisk_read_sector(xdisk, (u8_t *)xfat->fat_buffer, xfat->fat_start_sector, xfat->fat_tbl_sectors); //
     if (err < 0) {
         return err;
     }
@@ -78,36 +78,39 @@ xfat_err_t xfat_open(xfat_t * xfat, xdisk_part_t * xdisk_part) {
 }
 
 /**
- * 获取指定簇号的第一个扇区编号
+ * 获取数据区中这一簇的开始扇区
  * @param xfat xfat结构
  * @param cluster_no  簇号
  * @return 扇区号
  */
 u32_t cluster_fist_sector(xfat_t *xfat, u32_t cluster_no) {
-    u32_t data_start_sector = xfat->fat_start_sector + xfat->fat_tbl_sectors * xfat->fat_tbl_nr;
-    return data_start_sector + (cluster_no - 2) * xfat->sec_per_cluster;    // 前两个簇号保留
+    u32_t data_start_sector = xfat->fat_start_sector + xfat->fat_tbl_sectors * xfat->fat_tbl_nr;// 数据区起始位置
+    return data_start_sector + (cluster_no - 2) * xfat->sec_per_cluster;    // 当前簇的扇区号 = 数据区起始位置  + （簇号-2） *  每簇的扇区数
 }
 
 /**
- * 检查指定簇是否可用，非占用或坏簇
- * @param cluster 待检查的簇
+ * 输入一个簇号，检查这个簇号代表的簇是否是有效的，非占用或坏簇；
+ * @param cluster 待检查的簇号
  * @return
  */
 int is_cluster_valid(u32_t cluster) {
-    cluster &= 0x0FFFFFFF;
-    return (cluster < 0x0FFFFFF0) && (cluster >= 0x2);     // 值是否正确
+    cluster &= 0x0FFFFFFF; // 对前28位（什么的？簇的？还是记录表项的？）的数字；
+    // 因为0xFFFFFFF0开始到0xFFFFFFFF这8个分别是 系统保留 坏簇标志 文件结束标志 
+    // ————fat设计者希望我如果根据fat表向后不断跳转时遇到了这10个最大的数值，就不要继续往后读了！
+    return (cluster < 0x0FFFFFF0) && (cluster >= 0x00000002);     
+    // 这些值表示当前表项对应的簇是有效的，整个0x00000000~0x0FFFFFFF部分是对一个簇有效的标识，而其中0x00000002~0x0FFFFFF0又是正常分配的簇的值范围
 }
 
 /**
- * 获取指定簇的下一个簇
+ * 向fat表获取指定簇的下一个簇的簇号：原理是查询fat表项，读取其内容，跳转。
  * @param xfat xfat结构
- * @param curr_cluster_no
- * @param next_cluster
+ * @param curr_cluster_no 当前簇号
+ * @param next_cluster 指向下一簇号的指针
  * @return
  */
 xfat_err_t get_next_cluster(xfat_t * xfat, u32_t curr_cluster_no, u32_t * next_cluster) {
     if (is_cluster_valid(curr_cluster_no)) {
-        cluster32_t * cluster32_buf = (cluster32_t *)xfat->fat_buffer;
+        cluster32_t * cluster32_buf = (cluster32_t *)xfat->fat_buffer; // cluster32_buf是fat32表项类型，指向所有fat表项的起始地址
         *next_cluster = cluster32_buf[curr_cluster_no].s.next;
     } else {
         *next_cluster = CLUSTER_INVALID;
@@ -117,27 +120,28 @@ xfat_err_t get_next_cluster(xfat_t * xfat, u32_t curr_cluster_no, u32_t * next_c
 }
 
 /**
- * 读取一个簇的内容到指定缓冲区
- * @param xfat xfat结构
- * @param buffer 数据存储的缓冲区
- * @param cluster 读取的起始簇号
- * @param count 读取的簇数量
- * @return
+ * 读取指定fat系统中从指定簇开始的数个的内容到指定缓冲区
+ * @param xfat xfat结构 
+ * @param buffer 数据存储的缓冲区 
+ * @param cluster 读取的起始簇号 
+ * @param count 读取的簇数量 
+ * @return 
  */
 xfat_err_t read_cluster(xfat_t *xfat, u8_t *buffer, u32_t cluster, u32_t count) {
     xfat_err_t err = 0;
     u32_t i = 0;
-    u8_t * curr_buffer = buffer;
-    u32_t curr_sector = cluster_fist_sector(xfat, cluster);
-
+    u8_t * curr_buffer = buffer; // curr_buffer指向当前向buffer写入到的位置 
+    u32_t curr_sector = cluster_fist_sector(xfat, cluster); // 此变量初始时指向数据区中这一簇的开始扇区；（绝对扇区编号）
+     
+    // 读取count个簇到扇区 
     for (i = 0; i < count; i++) {
         err = xdisk_read_sector(xfat_get_disk(xfat), curr_buffer, curr_sector, xfat->sec_per_cluster);
-        if (err < 0) {
+        if (err < 0) { 
             return err;
         }
 
-        curr_buffer += xfat->cluster_byte_size;
-        curr_sector += xfat->sec_per_cluster;
+        curr_buffer += xfat->cluster_byte_size;// curr_buffer前进到下一个位置
+        curr_sector += xfat->sec_per_cluster;// 下一次从这里开始读取
     }
 
     return FS_ERR_OK;

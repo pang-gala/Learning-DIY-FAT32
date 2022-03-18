@@ -97,7 +97,7 @@ void show_dir_info (diritem_t * diritem) {
     char file_name[12];
     u8_t attr = diritem->DIR_Attr;
 
-    // name
+    // name 
     memset(file_name, 0, sizeof(file_name));
     memcpy(file_name, diritem->DIR_Name, 11);
     if (file_name[0] == 0x05) {
@@ -150,6 +150,7 @@ void show_dir_info (diritem_t * diritem) {
     printf("\n");
 }
 
+
 int fat_dir_test(void) {
     int err;
     u32_t curr_cluster;
@@ -160,32 +161,34 @@ int fat_dir_test(void) {
 
     printf("root dir read test...\n");
 
-    culster_buffer = (u8_t *)malloc(xfat.cluster_byte_size);
+    u8_t* test_buffer = (u8_t*)malloc(5);
+    culster_buffer = (u8_t *)malloc(xfat.cluster_byte_size); // 存放读取出来的簇的缓冲
 
     // 解析根目录所在的簇
-    curr_cluster = xfat.root_cluster;
-    while (is_cluster_valid(curr_cluster)) {
-        err = read_cluster(&xfat, culster_buffer, curr_cluster, 1);
+    curr_cluster = xfat.root_cluster; // fat解析出来的根目录所在的簇号
+    while (is_cluster_valid(curr_cluster)) { // 在簇有效的时候不断阅读下一个簇，直到完整地读取当前目录文件；
+        err = read_cluster(&xfat, culster_buffer, curr_cluster, 1); // 读取一个簇到缓冲区（第一次从xfat.root_cluster开始）。需要fat配置信息，才知道从哪个扇区读取到哪个扇区（本质上都是读取扇区）
         if (err) {
             printf("read cluster %d failed\n", curr_cluster);
             return -1;
         }
 
-        dir_item = (diritem_t *)culster_buffer;
-        for (j = 0; j < xfat.cluster_byte_size / sizeof(diritem_t); j++) {
-            u8_t  * name = (u8_t *)(dir_item[j].DIR_Name);
-            if (name[0] == DIRITEM_NAME_FREE) {
+        dir_item = (diritem_t *)culster_buffer; // 目录项类型指针，先让其指向当前簇的开头；
+        for (j = 0; j < xfat.cluster_byte_size / sizeof(diritem_t); j++) { // 遍历当前簇中的目录项，遍历到了一个簇的大小时，就该停了
+            u8_t  * name = (u8_t *)(dir_item[j].DIR_Name); // 当前目录项对应的DIR_Name字段
+            if (name[0] == DIRITEM_NAME_FREE) { //name[0] == 0xE5, 则此目录为空 (目录项不包含文件和目录 ) ，向后遍历
                 continue;
-            } else if (name[0] == DIRITEM_NAME_END) {
+            } else if (name[0] == DIRITEM_NAME_END) { // name[0] == 0x00，则此目录为空 (同 0xE5), 并且此后的目录项都是空的，不必向后了
                 break;
             }
 
+            // 输出第index个文件的info，show_dir_info将会将可以解析的字段悉数打印出来
             index++;
-            printf("no: %d, ", index);
+            printf("no: %d, ", index); 
             show_dir_info(&dir_item[j]);
         }
 
-        err = get_next_cluster(&xfat, curr_cluster, &curr_cluster);
+        err = get_next_cluster(&xfat, curr_cluster, &curr_cluster);// 当前簇中的目录项遍历完成，前往下一簇【如何知道到了目录项的最后一簇？】————————————  
         if (err) {
             printf("get next cluster failed， current cluster %d\n", curr_cluster);
             return -1;
