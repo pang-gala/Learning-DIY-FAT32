@@ -290,19 +290,20 @@ static u32_t get_diritem_cluster (diritem_t * item) {
 }
 
 /**
- 在给定的xfat分区的某一个目录文件的（initial_sector扇区，initial_offset比特）位置开始寻找path路径中描述的子文件，
+ 在给定的xfat分区的某一个目录文件的（initial_sector扇区，initial_offset比特）位置开始寻找path路径中描述的当前一级子文件
+ （比如path = "/abc/def/123.txt",则本次函数执行目标为在当前dir找到abc这一个目录文件对应的目录项，返回），
  找到之后，存入r_diritem返回，并且记录查找时所经过的偏移move_bytes（其间可能跨过0~n个簇，如果跨簇，这个偏移怎么搞？）
     如果path为空，直接返回当前目录文件的（initial_sector扇区，initial_offset比特）位置的目录项；
-    如果没找到？？？？？？？？？——————————————————
+    如果遍历到某一簇的某一扇区的某一目录项找到了，则返回指向这个目录项指针的指针、所在簇、簇上偏移、move_bytes等定位用数据；
+    如果遍历完了目录文件没找到，则返回ERR_EOF；
  要一个扇区一个扇区的读取，查找
  * xfat 传入的，xfat结构
- 查找起始位置：（簇，簇中偏移）：
+
  * dir_cluster 传入的，要查找的file所在的目录数据所在的簇号（可能是目录文件中的某一簇），从这一簇开始向后扫描目录项
- * cluster_offset 簇中的偏移（单位B），从簇中的这个目录项序号开始寻找
- 找到的结果：
+ * cluster_offset 传入的，簇中的偏移（单位B），从簇中的这个目录项序号开始寻找
  * move_bytes 返回的，找到的目标目录项，相对于上面的起始位置的偏移（单位B）；（目前不清楚是否仅仅是最终找到目录文件时，才记录这一项）
- * path 传入的，文件或目录的完整路径————处理时要截断前面的吗？？？——————————————————————？？？？？？？？
- * r_diritem 返回的，查找到的diritem项，如果指向为0，说明路径不对，当前这一级根本没有这个文件或者目录文件
+ * path 传入的，相对当前目录的路径———— （比如path = "/abc/def/123.txt",则本次函数执行目标为在当前dir找到abc这一个目录文件对应的目录项，返回）
+ * r_diritem 返回的，查找到的diritem*指针的指针，如果用户传入的东西
  */
 static xfat_err_t locate_file_dir_item(xfat_t *xfat, u32_t *dir_cluster, u32_t *cluster_offset,
                                     const char *path, u32_t *move_bytes, diritem_t **r_diritem) {
@@ -310,7 +311,7 @@ static xfat_err_t locate_file_dir_item(xfat_t *xfat, u32_t *dir_cluster, u32_t *
     xdisk_t * xdisk = xfat_get_disk(xfat);// 获取当前所在的disk
     u32_t initial_sector = to_sector(xdisk, *cluster_offset);   // 相对于簇开头的扇区号，其实就是cluster_offset这个簇中字节偏移对应的簇中扇区偏移；
                                                                 // 计算：用偏移cluster_offset和disk的扇区大小计算；
-    u32_t initial_offset = to_sector_offset(xdisk, *cluster_offset);    // 上面这个扇区中的偏移，单位B。
+    u32_t initial_offset = to_sector_offset(xdisk, *cluster_offset);    // 使用簇中偏移计算出的在上面这个扇区中的偏移，单位B。组合起来可以得到（initial_sector扇区，initial_offset比特）定位了一个簇中的一个具体位置
     u32_t r_move_bytes = 0;// 循环遍历目录文件不同簇时记录的偏移，最后返回给move_bytes用？？？？？？？
 
     // cluster
@@ -343,16 +344,20 @@ static xfat_err_t locate_file_dir_item(xfat_t *xfat, u32_t *dir_cluster, u32_t *
 
                 if ((path == (const char *) 0)
                     || (*path == 0)
-                    || is_filename_match((const char *) dir_item->DIR_Name, path)) {    // 路径为空，或者完成了匹配（这两种情况都可以停止了）
+                    || is_filename_match((const char *) dir_item->DIR_Name, path)) {    // 路径为空（因为本函数不改变path，所以路径为空的情况会在第一次进入这里时被捕获），或者完成了匹配（这两种情况都可以停止了）
                                                                                         // ————————什么时候路径会为空？？？难道不应该要么匹配要么路径不太对？？？
                                                                                         // 直接返回当前目录
 
                     u32_t total_offset = i * xdisk->sector_size + j * sizeof(diritem_t); // 相对于扇区开始的总偏移 = 当前扇区的偏移 + 当前目录项在当前扇区中的偏移；
-                    *dir_cluster = curr_cluster;
+                    
+                    *dir_cluster = curr_cluster; // 目标文件的目录项所在的簇
+                    *cluster_offset = total_offset;// 所在簇上的具体偏移（字节）
+
                     *move_bytes = r_move_bytes + sizeof(diritem_t); // 匹配了，则move_bytes等于之前累计的r_move_bytes加上一个目录项的大小
                                                                     // ——————————————是当前的这个目录项吗？要寻找的不就是它？为什么还要累加？？
-                    *cluster_offset = total_offset;
-                    if (r_diritem) { // 如果调用者传入的是一个有效的指针，则这里将结果赋给这个指针，让调用者使用找到的目录项；——————————————？？？？这个判断意义何在？？？？？
+                    
+                    if (r_diritem) {    // 如果这个r_diritem（一个指针的指针）不为空，则让其管理的指针指向查找结果dir_item
+                                        // （换言之如果用户着实传递了一个dir_item*进来，而不是在最后一个参数乱写的一个数字0，我才会返回，属于一种防御性编程吧）
                         *r_diritem = dir_item;
                     }
 
@@ -404,15 +409,16 @@ static xfat_err_t open_sub_file (xfat_t * xfat, u32_t dir_cluster, xfile_t * fil
         while (curr_path != (const char *)0) {
             u32_t moved_bytes = 0;// 在这一簇目录文件中找到的目标文件相对parent_cluster_offset的偏移，单位字节，本课时中无意义
             dir_item = (diritem_t *)0;
-
-            // 在父目录下查找指定路径对应的文件—————
+            
+            // 在父目录下查找指定路径对应的文件—————偏移值现在传入的是0，可能以后有用
             xfat_err_t err = locate_file_dir_item(xfat, &parent_cluster, &parent_cluster_offset,
                                                 curr_path, &moved_bytes, &dir_item);
-            if (err < 0) {
+            if (err < 0) { // 上面这个函数遍历完了parent_cluster这个目录文件所有簇，都没有查找到curr_path指向的下一级文件/目录
                 return err;
             }
              
-            if (dir_item == (diritem_t *)0) { // 找到的item指向位0，表示没有找到文件。（说明路径不对，根本没有找到这个文件或者目录文件）
+            if (dir_item == (diritem_t *)0) { // 如果返回的指针，指向了一个目录项，则说明找到了，否则说明没有找到——————这他妈都是啥？？？
+                // 不是上面调用locate_file_dir_item的时候传入的是空item，就会在里面判断为空然后没有返回吗？？？？？
                 return FS_ERR_NONE;
             }
 
