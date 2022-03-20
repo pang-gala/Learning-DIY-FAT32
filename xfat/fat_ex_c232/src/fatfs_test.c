@@ -289,7 +289,7 @@ int main (void) {
 //    err = disk_io_test();
 //    if (err) return err;
 
-    err = xdisk_open(&disk, "vidsk", &vdisk_driver, (void *)disk_path);
+    err = xdisk_open(&disk, "vidsk", &vdisk_driver, (void *)disk_path);// 注意，老师的这些代码，img需要放在sln、proj文件同一级
     if (err) {
         printf("open disk failed!\n");
         return -1;
