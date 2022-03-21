@@ -233,8 +233,8 @@ int fat_file_test(void) {
 int fs_open_test (void) {
     const char * not_exist_path = "/file_not_exist.txt";
     const char * exist_path = "/12345678ABC";    // 注意：文件名要大写
-    const char * file1 = "/open/file.txt";
-    const char * file2 = "/open/a0/a1/a2/a3/a4/a5/a6/a7/a8/a9/a10/a11/a12/a13/a14/a15/a16/a17/a18/a19/file.txt";
+    const char * file1_path = "/open/file.txt";
+    const char * file2_path = "/open/a0/a1/a2/a3/a4/a5/a6/a7/a8/a9/a10/a11/a12/a13/a14/a15/a16/a17/a18/a19/file.txt";
     xfat_err_t err;
     xfile_t file;
 
@@ -260,16 +260,16 @@ int fs_open_test (void) {
     }
     xfile_close(&file);
 
-    err = xfile_open(&xfat, &file, file1);
+    err = xfile_open(&xfat, &file, file1_path);
     if (err < 0) {
-        printf("open file failed %s!\n", file1);
+        printf("open file failed %s!\n", file1_path);
         return -1;
     }
     xfile_close(&file);
 
-    err = xfile_open(&xfat, &file, file2);
+    err = xfile_open(&xfat, &file, file2_path);
     if (err < 0) {
-        printf("open file failed %s!\n", file2);
+        printf("open file failed %s!\n", file2_path);
         return -1;
     }
     xfile_close(&file);
