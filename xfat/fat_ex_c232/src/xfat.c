@@ -314,18 +314,21 @@ static u32_t get_diritem_cluster (diritem_t * item) {
   * @param xfat 传入的，xfat结构
   * @param dir_cluster 传入的，要查找的file所在的目录数据所在的簇号（可能是目录文件中的某一簇），从这一簇开始向后扫描目录项
   * @param cluster_offset 传入的，簇中的偏移（单位B），从簇中的这个目录项序号开始寻找
-  * @param move_bytes 返回的，找到的目标目录项，相对于上面的起始位置的偏移（单位B）；（目前不清楚是否仅仅是最终找到目录文件时，才记录这一项）
+  * @param move_bytes 返回的，找到的目标目录项，相对于上面的起始位置的偏移（单位B），现在我们没用；（每检测一个扇区上的一个目录项，就会累加一次，因此是；注：这个累加行为会持续经过多个簇，所以并不是记录的一簇内的偏移）
   * @param path 传入的，相对当前目录的路径———— （比如path = "/abc/def/123.txt",则本次函数执行目标为在当前dir找到abc这一个目录文件对应的目录项，返回）
   * @param r_diritem 返回的，查找到的diritem*指针的指针，如果用户传入的东西
-  * @return
+  * @return 
   */
 static xfat_err_t locate_file_dir_item(xfat_t *xfat, u32_t *dir_cluster, u32_t *cluster_offset,
                                     const char *path, u32_t *move_bytes, diritem_t **r_diritem) {
     u32_t curr_cluster = *dir_cluster;// 当前从dir_cluster这个簇开始
     xdisk_t * xdisk = xfat_get_disk(xfat);// 获取当前所在的disk
+
+    // 使用cluster_offset计算下面两个值：（扇区，扇区偏移），因为之后遍历目录项时，是一次读取一个扇区的内容来遍历的，所以要获取到扇区的位置
     u32_t initial_sector = to_sector(xdisk, *cluster_offset);   // 相对于簇开头的扇区号，其实就是cluster_offset这个簇中字节偏移对应的簇中扇区偏移；
                                                                 // 计算：用偏移cluster_offset和disk的扇区大小计算；
     u32_t initial_offset = to_sector_offset(xdisk, *cluster_offset);    // 使用簇中偏移计算出的在上面这个扇区中的偏移，单位B。组合起来可以得到（initial_sector扇区，initial_offset比特）定位了一个簇中的一个具体位置
+    
     u32_t r_move_bytes = 0;// 循环遍历目录文件不同簇时记录的偏移，最后返回给move_bytes用？？？？？？？
 
     // cluster
