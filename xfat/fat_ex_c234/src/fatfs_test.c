@@ -230,8 +230,24 @@ int fat_file_test(void) {
     return 0;
 }
 
-void show_file_info(xfileinfo_t * fileinfo) {
+// _xfileinfo_t类型参考------------------------------------------------
+//typedef struct _xfileinfo_t {
+//#define X_FILEINFO_NAME_SIZE        32
+//    char file_name[X_FILEINFO_NAME_SIZE];       // 文件名
+//
+//    u32_t size;                                 // 文件字节大小
+//    u16_t attr;                                 // 文件属性
+//    xfile_type_t type;                          // 文件类型
+//    xfile_time_t create_time;                       // 创建时间
+//    xfile_time_t last_acctime;                      // 最后访问时间
+//    xfile_time_t modify_time;                       // 最后修改时间
+//} xfileinfo_t;
+
+void show_file_info(xfileinfo_t * fileinfo) { // _xfileinfo_t类型见上面的参考
+    // 打印名称
     printf("\n\nname: %s, ", fileinfo->file_name);
+
+    // 打印类型
     switch (fileinfo->type) {
         case FAT_FILE:
             printf("file, ");
@@ -258,7 +274,7 @@ void show_file_info(xfileinfo_t * fileinfo) {
     // last acc time
     printf("\n\tlast acc:%d-%d-%d, ", fileinfo->last_acctime.year, fileinfo->last_acctime.month, fileinfo->last_acctime.day);
 
-    // size
+    // size（KB）
     printf("\n\tsize %d kB, ", fileinfo->size / 1024);
 
     printf("\n");
@@ -285,7 +301,8 @@ int dir_trans_test(void) {
     }
     show_file_info(&fileinfo);
 
-    while ((err = xdir_next_file(&top_dir, &fileinfo)) == 0) {
+    // 遍历的方式：当err == 0时可以继续遍历
+    while ((err = xdir_next_file(&top_dir, &fileinfo)) == 0) { 
         show_file_info(&fileinfo);
     }
     if (err < 0) {

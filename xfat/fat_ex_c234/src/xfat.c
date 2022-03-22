@@ -280,7 +280,7 @@ static xfile_type_t get_file_type(const diritem_t *diritem) {
 }
 
 /**
- * 复制相应的时间信息到dest中
+ * 复制来自diritem中的Date、time等时间信息到xfile_time_t中
  * @param dest 指定存储的时间信息结构
  * @param date fat格式的日期
  * @param time fat格式的时间
@@ -288,6 +288,7 @@ static xfile_type_t get_file_type(const diritem_t *diritem) {
  */
 static void copy_date_time(xfile_time_t *dest, const diritem_date_t *date,
                            const diritem_time_t *time, const u8_t mil_sec) {
+    // date和time两个指针都有可能是空
     if (date) {
         dest->year = (u16_t)(date->year_from_1980 + 1980);
         dest->month = (u8_t)date->month;
@@ -316,30 +317,37 @@ static void copy_date_time(xfile_time_t *dest, const diritem_date_t *date,
  */
 static void sfn_to_myname(char *dest_name, const diritem_t * diritem) {
     int i;
-    char * dest = dest_name, * raw_name = (char *)diritem->DIR_Name;
-    u8_t ext_exist = raw_name[8] != 0x20;
-    u8_t scan_len = ext_exist ? SFN_LEN + 1 : SFN_LEN;
+    char * dest = dest_name;
+    char * raw_name = (char *)diritem->DIR_Name;
 
-    memset(dest_name, 0, X_FILEINFO_NAME_SIZE);   
+    // 判断是否有扩展名：
+    u8_t ext_exist = raw_name[8] != 0x20; // diritem从DIR_Name开始的第八个字符（对应着DIR_ExtName[3]的第一个字符），如果不是空格，说明扩展名不为空(0x20)（也就是有扩展名）
+    
+    // 存放结果文件名的最长长度
+    u8_t scan_len = ext_exist ? SFN_LEN + 1 : SFN_LEN; // 如果存在扩展名，则最长长度为11+1(包含一个.符)
 
+    memset(dest_name, 0, X_FILEINFO_NAME_SIZE);   // 清空结果名称容器，不知道为什么清空的长度是32.
+    
     // 要考虑大小写问题，根据NTRes配置转换成相应的大小写
     for (i = 0; i < scan_len; i++) {
-        if (*raw_name == ' ') {
+        if (*raw_name == ' ') {// 如果遍历8+3文件名遇到了空格，则跳过，比如原文件名可能是"123   ABC"
             raw_name++;
-        } else if ((i == 8) && ext_exist) {
+        } else if ((i == 8) && ext_exist) { // 扫描到文件名结束,并且有扩展名，则在结果字符串的下一个位置上填入一个.扩展符
            *dest++ = '.';
         } else {
-            u8_t lower = 0;
+            // 是普通字符的情况，需要处理大小写问题
+            u8_t lower = 0; // 默认大写
 
-            if (((i < 8) && (diritem->DIR_NTRes & DIRITEM_NTRES_BODY_LOWER))
-                || ((i > 8) && (diritem->DIR_NTRes & DIRITEM_NTRES_EXT_LOWER))) {
+            if (((i < 8) && (diritem->DIR_NTRes & DIRITEM_NTRES_BODY_LOWER)) // DIRITEM_NTRES_BODY_LOWER表示文件名小写，值为00001000
+                || ((i > 8) && (diritem->DIR_NTRes & DIRITEM_NTRES_EXT_LOWER))) { // 这个表示扩展名小写，值为
                 lower = 1;
             }
 
-            *dest++ = lower ? tolower(*raw_name++) : toupper(*raw_name++);
+            *dest++ = lower ? tolower(*raw_name++) : toupper(*raw_name++); // 以大小写形式输出
         }
     }
-    *dest = '\0';
+
+    *dest = '\0'; // 返回一个字符串格式的结果时，最好加上结束符，这样更好用；
 }
 
 /**
@@ -357,14 +365,15 @@ static u32_t get_diritem_cluster (diritem_t * item) {
  * @param dir_item fat的diritem
  */
 static void copy_file_info(xfileinfo_t *info, const diritem_t * dir_item) {
-    sfn_to_myname(info->file_name, dir_item);
+    sfn_to_myname(info->file_name, dir_item); // dir_item所指的目录项的文件名，转普通应用层文件名。
     info->size = dir_item->DIR_FileSize;
     info->attr = dir_item->DIR_Attr;
     info->type = get_file_type(dir_item);
 
-    copy_date_time(&info->create_time, &dir_item->DIR_CrtDate, &dir_item->DIR_CrtTime, dir_item->DIR_CrtTimeTeenth);
-    copy_date_time(&info->last_acctime, &dir_item->DIR_LastAccDate, (diritem_time_t *) 0, 0) ;
-    copy_date_time(&info->modify_time, &dir_item->DIR_WrtDate, &dir_item->DIR_WrtTime, 0);
+    // 创建、最近访问、修改时间
+    copy_date_time(&info->create_time, &dir_item->DIR_CrtDate, &dir_item->DIR_CrtTime, dir_item->DIR_CrtTimeTeenth); 
+    copy_date_time(&info->last_acctime, &dir_item->DIR_LastAccDate, (diritem_time_t *) 0, 0) ; //最近访问时间，fat只记录了Date。所以其他填0
+    copy_date_time(&info->modify_time, &dir_item->DIR_WrtDate, &dir_item->DIR_WrtTime, 0); // 创建时间只记录了date、时分秒
 }
 
 /**
@@ -583,7 +592,7 @@ xfat_err_t xdir_first_file (xfile_t * file, xfileinfo_t * info) {
 
     cluster_offset = 0;
     err = locate_file_dir_item(file->xfat, XFILE_LOCATE_NORMAL,
-            &file->curr_cluster, &cluster_offset, "", &moved_bytes, &diritem);
+            &file->curr_cluster, &cluster_offset, "", &moved_bytes, &diritem); // moved_bytes用来更新pos（所以pos指的是连续遍历多个簇的偏移之和？？）
     if (err < 0) {
         return err;
     }
@@ -592,15 +601,18 @@ xfat_err_t xdir_first_file (xfile_t * file, xfileinfo_t * info) {
         return FS_ERR_EOF;
     }
 
+    // 更新pos
     file->pos += moved_bytes;
 
     // 找到后，拷贝文件信息
-    copy_file_info(info, diritem);
+    copy_file_info(info, diritem); // 用diritem生成一个文件信息对象，作为结果返回
     return err;
 }
 
 /**
  * 返回指定目录接下来的文件（用于文件遍历)
+ * 原理：在当前file所指的目录中，从file中存储的(xfat, pos)所指向的位置开始，向后阅读这个目录文件，得到下一个文件的记录。
+ * 特殊情况：1如果接下来没有文件了则返回FS_ERR_EOF；2如果传入的file不是目录文件，返回FS_ERR_PARAM；
  * @param file 已经打开的目录
  * @param info 获得的文件信息
  * @return
@@ -617,21 +629,25 @@ xfat_err_t xdir_next_file (xfile_t * file, xfileinfo_t * info) {
     }
 
     // 搜索文件或目录
-    cluster_offset = to_cluster_offset(file->xfat, file->pos);
+    cluster_offset = to_cluster_offset(file->xfat, file->pos);// pos是整个目录文件中的偏移，跨越0~n个簇
+                                                              //（32位无符号数最大表示4GB，在fat32中表示一个文件内的偏移/大小怎么都够了）；
     err = locate_file_dir_item(file->xfat, XFILE_LOCATE_NORMAL,
             &file->curr_cluster, &cluster_offset, "", &moved_bytes, &dir_item);
     if (err != FS_ERR_OK) {
         return err;
     }
 
+    // 接下来没有文件了
     if (dir_item == (diritem_t *)0) {
         return FS_ERR_EOF;
     }
 
+    // 更新pos
     file->pos += moved_bytes;
 
-    // 移动位置后，可能超过当前簇，更新当前簇位置
-    if (cluster_offset + sizeof(diritem_t) >= file->xfat->cluster_byte_size) {
+    // 根据上面返回的cluster_offset更新下一次遍历开始位置（curr_cluster，cluster_offset），
+    // 这里做的事情是检查是否要更新簇：如果再向后读取一目录项就越出当前簇了，则前往下一个簇
+    if (cluster_offset + sizeof(diritem_t) >= file->xfat->cluster_byte_size) { 
         err = get_next_cluster(file->xfat, file->curr_cluster, &file->curr_cluster);
         if (err < 0) {
             return err;
