@@ -165,7 +165,8 @@ typedef enum _xfile_type_t {
 
 #define SFN_LEN                     11              // sfn文件名长
 
-#define XFILE_LOCATE_NORMAL         (1 << 0)        // 查找普通文件
+// 这些都是是传递给文件枚举api的参数，表示各类型文件是否显示（也就是不过滤这类文件）
+#define XFILE_LOCATE_NORMAL         (1 << 0)        // 过滤参数，表示显示普通文件
 #define XFILE_LOCATE_DOT            (1 << 1)        // 查找.和..文件
 #define XFILE_LOCATE_VOL            (1 << 2)        // 查找卷标
 #define XFILE_LOCALE_SYSTEM         (1 << 3)        // 查找系统文件

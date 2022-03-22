@@ -288,7 +288,9 @@ int dir_trans_test(void) {
     printf("\ntrans dir test!\n");
 
     // 仅遍历根目录下面的这一层
-    err = xfile_open(&xfat, &top_dir, "/read/..");
+    // 输入这个目录，将会导致下面打开并且findfile的目录是根目录，而根目录会遇到“根目录的.和..”两个问题；我们在open_sub_file中对其进行了专门的识别和处理，
+    // 防止错误的读取了一个地址为0的..目录项的结果？？？？——————————————————————————————
+    err = xfile_open(&xfat, &top_dir, "/modify/.."); // "/read/.."
     if (err < 0) {
         printf("open directory failed!\n");
         return -1;
