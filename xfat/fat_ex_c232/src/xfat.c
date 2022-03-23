@@ -305,7 +305,7 @@ static u32_t get_diritem_cluster (diritem_t * item) {
 
  /**
   * 在给定的xfat分区的某一个目录文件的（initial_sector扇区，initial_offset比特）位置开始寻找path路径中描述的当前一级子文件
-  * （比如path = "/abc/def/123.txt",则本次函数执行目标为在当前dir找到abc这一个目录文件对应的目录项，返回），
+  * （比如输入path = "/abc/def/123.txt",则本次函数执行目标为在当前dir找到abc这一个文件对应的目录项，返回），
   * 找到之后，存入r_diritem返回，并且记录查找时所经过的偏移move_bytes（其间可能跨过0~n个簇，如果跨簇，这个偏移怎么搞？）
   * 1.如果path为空，直接返回当前目录文件的（initial_sector扇区，initial_offset比特）位置的目录项；
   * 2.如果遍历到某一簇的某一扇区的某一目录项找到了，则返回指向这个目录项指针的指针、所在簇、簇上偏移、move_bytes等定位用数据；
