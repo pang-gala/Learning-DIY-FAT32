@@ -287,10 +287,8 @@ int dir_trans_test(void) {
 
     printf("\ntrans dir test!\n");
 
-    // 仅遍历根目录下面的这一层
-    // 输入这个目录，将会导致下面打开并且findfile的目录是根目录，而根目录会遇到“根目录的.和..”两个问题；我们在open_sub_file中对其进行了专门的识别和处理，
-    // 防止错误的读取了一个地址为0的..目录项的结果？？？？——————————————————————————————
-    err = xfile_open(&xfat, &top_dir, "/modify/.."); // "/read/.."
+    // 从xfat所在分区的根目录下开始遍历，搜寻用户输入的路径
+    err = xfile_open(&xfat, &top_dir, "/read/../modify/"); // "/read/.."、"/modify/.."
     if (err < 0) {
         printf("open directory failed!\n");
         return -1;
@@ -332,14 +330,14 @@ int fs_open_test (void) {
 
     printf("fs_open test...\n");
 
-    err = xfile_open(&xfat, &file, "/");
+    err = xfile_open(&xfat, &file, "/read/../modify/");
     if (err) {
         printf("open file failed %s!\n", "/");
         return -1;
     }
     xfile_close(&file);
 
-    err = xfile_open(&xfat, &file, not_exist_path);
+   /* err = xfile_open(&xfat, &file, not_exist_path);
     if (err == 0) {
         printf("open file ok %s!\n", not_exist_path);
         return -1;
@@ -364,7 +362,7 @@ int fs_open_test (void) {
         printf("open file failed %s!\n", file2);
         return -1;
     }
-    xfile_close(&file);
+    xfile_close(&file);*/
 
     printf("file open test ok\n");
     return 0;
@@ -407,8 +405,8 @@ int main (void) {
 //    err = fat_file_test();
 //    if (err) return err;
 
-//    err = fs_open_test();
-//    if (err) return err;
+    //err = fs_open_test();
+    //if (err) return err;
 
     err = dir_trans_test();
     if (err) return err;

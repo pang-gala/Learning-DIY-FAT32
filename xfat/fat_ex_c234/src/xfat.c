@@ -12,9 +12,9 @@
 
 extern u8_t temp_buffer[512];      // todo: 缓存优化
 
-// 内置的.和..文件名              "12345678ext"
-#define DOT_FILE                ".          "
-#define DOT_DOT_FILE            "..         "
+// 内置的.和..文件名                    "12345678ext"
+#define DOT_FILE_NAME                ".          "
+#define DOT_DOT_FILE_NAME            "..         "
 
 #define is_path_sep(ch)         (((ch) == '\\') || ((ch == '/')))       // 判断是否是文件名分隔符
 #define xfat_get_disk(xfat)     ((xfat)->disk_part->disk)               // 获取disk结构
@@ -245,8 +245,8 @@ static const char * skip_first_path_sep (const char * path) {
 }
 
 /**
- * 获取子路径
- * @param dir_path 上一级路径
+ * 获取子路径，如果子路径为结束符，则将返回地址0，否则返回指向子路径第一个字符的指针
+ * @param dir_path 
  * @return
  */
 const char * get_child_path(const char *dir_path) {
@@ -377,26 +377,27 @@ static void copy_file_info(xfileinfo_t *info, const diritem_t * dir_item) {
 }
 
 /**
- * 检查文件名和类型是否匹配——————————编码思想？？？？？？
+ * 检查文件名和类型是否匹配——————————对SYSTEM、HIDDEN、VOLUME_ID、LOCATE_DOT、LOCATE_NORMAL五种，LOCATE_ALL并没有操作（话说啊，0xff好像也不是所有之和A啊？？）
  * @param dir_item
  * @param locate_type
  * @return
  */
 static u8_t is_locate_type_match (diritem_t * dir_item, u8_t locate_type) {
-    u8_t match = 1;
+    u8_t match = 1;// 表示是否匹配，1表示dir_item和locate_type匹配（无需过滤）；
 
     if ((dir_item->DIR_Attr & DIRITEM_ATTR_SYSTEM) && !(locate_type & XFILE_LOCALE_SYSTEM)) {
-        match = 0;  // 不显示系统文件
+        match = 0;  // 是系统文件，且用户没有传入XFILE_LOCALE_SYSTEM，——用户没说明要在locate_file_dir_item执行时，考虑系统文件；
+        // 一般path是确定的，用不到这个函数吧————————其实是这样：有些时候locate_file_dir_item函数拿来遍历目录？？？！！！
     } else if ((dir_item->DIR_Attr & DIRITEM_ATTR_HIDDEN) && !(locate_type & XFILE_LOCATE_HIDDEN)) {
         match = 0;  // 不显示隐藏文件
     } else if ((dir_item->DIR_Attr & DIRITEM_ATTR_VOLUME_ID) && !(locate_type & XFILE_LOCATE_VOL)) {
         match = 0;  // 不显示卷标
-    } else if ((memcmp(DOT_FILE /*也就是".          "*/ , dir_item->DIR_Name, SFN_LEN) == 0)
-                || (memcmp(DOT_DOT_FILE /*也就是"..         "*/ , dir_item->DIR_Name, SFN_LEN) == 0)) {
+    } else if ((memcmp(DOT_FILE_NAME /*也就是".          "*/ , dir_item->DIR_Name, SFN_LEN) == 0)
+                || (memcmp(DOT_DOT_FILE_NAME /*也就是"..         "*/ , dir_item->DIR_Name, SFN_LEN) == 0)) {
         if (!(locate_type & XFILE_LOCATE_DOT)) {
             match = 0;// 不显示dot文件
         }
-    } else if (!(locate_type & XFILE_LOCATE_NORMAL)) {
+    } else if (!(locate_type & XFILE_LOCATE_NORMAL)) { // 普通文件都要过滤——则直接一律match = 0？？？？
         match = 0;
     }
     return match;
@@ -443,11 +444,16 @@ static xfat_err_t locate_file_dir_item(xfat_t *xfat, u8_t locate_type, u32_t *di
                 } else if (dir_item->DIR_Name[0] == DIRITEM_NAME_FREE) {
                     r_move_bytes += sizeof(diritem_t);
                     continue;
-                } else if (!is_locate_type_match(dir_item, locate_type)) { // 改变————————————判断当前文件和用户传入的类型locate_type是否一致；——————感觉不应该在这里面吧？？
-                    r_move_bytes += sizeof(diritem_t);
-                    continue;
-                }
+                } 
+                //// 各类type在这里统一处理——————————判断当前文件和用户传入的类型locate_type是否一致；
+                //else if (!is_locate_type_match(dir_item, locate_type))  // 在匹配用户输入的path（下方代码）之前，判断类型，如果类型不对，根本匹配不到。
+                //                                                        // ————————老师设计的本函数的职责是“根据path递归查找目标文件并注意过滤”
+                //{ 
+                //    r_move_bytes += sizeof(diritem_t);
+                //    continue;
+                //}
 
+               
                 if ((path == (const char *) 0)
                     || (*path == 0)
                     || is_filename_match((const char *) dir_item->DIR_Name, path)) {
@@ -507,7 +513,8 @@ static xfat_err_t open_sub_file (xfat_t * xfat, u32_t dir_cluster, xfile_t * fil
             dir_item = (diritem_t *)0;
 
             // 在父目录下查找指定路径对应的文件
-            xfat_err_t err = locate_file_dir_item(xfat, XFILE_LOCATE_DOT | XFILE_LOCATE_NORMAL, // 改变————————————支持 /read/a/./b/..路径
+            // ————在这里对用户输入的path.和..提供了支持！让其支持 /read/a/./b/..路径，能返回普通文件和dot文件的目录项diritem：
+            xfat_err_t err = locate_file_dir_item(xfat, XFILE_LOCATE_DOT | XFILE_LOCATE_NORMAL, 
                     &parent_cluster, &parent_cluster_offset,curr_path, &moved_bytes, &dir_item);
             if (err < 0) {
                 return err;
@@ -518,16 +525,32 @@ static xfat_err_t open_sub_file (xfat_t * xfat, u32_t dir_cluster, xfile_t * fil
             }
 
             curr_path = get_child_path(curr_path);
-            if (curr_path != (const char *)0) {
-                parent_cluster = get_diritem_cluster(dir_item);
+            if (curr_path != (const char *)0) 
+                // path没有走完，将两个参数继承到下一次循环：parent_cluster、parent_cluster_offset                             //     -> 是 ——> 以dir_item解析file数据，返回
+                // 问题：下面的所有参数都是根据dir_item的信息获取得到的，可否让locate_file_dir_item直接接受这个dir传入呢？          //    /
+                // 答：不可，请观察本函数的执行：第一次循环xfat+dir_cluster+path——>locate_file_dir_item——>dir_item——>是否抵达目的文件？——> 否 ——> 以dir_item解析dir_cluster等数据，进入下一次循环
+            {                                                                                                         
+                // parent_cluster = get_diritem_cluster(dir_item); // 不是，这里怎么不照顾“当前..这个目录项的值是0”的情况？？？完全有可能中间某一级别是..啊？？？/read/../modify/ = /modify/
+                if ((memcmp(dir_item->DIR_Name, DOT_DOT_FILE_NAME, SFN_LEN) == 0) && (file_start_cluster == 0)) {
+                    parent_cluster = xfat->root_cluster;
+                }
+                else
+                {
+                    parent_cluster = get_diritem_cluster(dir_item);
+                }
+                
                 parent_cluster_offset = 0;
-            } else {
+            } 
+            else 
+                // path走完了，（当前diritem为..或.时前往其指向的方向）————在这里对用户输入的path.和..提供了支持！！————————等等；
+            {
                 file_start_cluster = get_diritem_cluster(dir_item);
 
-                // 一个fat32的特殊情况：在层层进入path中标注的”内层“目录时，可能会遇到..文件夹，这种情况其实不是进入内层，而是退回外层；
-                // 而这个特殊情况还有一个特别糟糕的子情况——目录项指向..文件，指向的是根目录，这时向其目录项获取地址会直接返回0，而不是根目录的实际地址（这是因为不同的设备上根目录或许不同）。
-                // 如果是..且当前..这个目录项的值是0（说明当前在根目录），则重置当前位置为根目录文件开始簇                  // 改变————————————怎么会放在这里呢？？？？？
-                if ((memcmp(dir_item->DIR_Name, DOT_DOT_FILE, SFN_LEN) == 0) && (file_start_cluster == 0)) {
+                // 一个fat32的特殊情况：如果diritem是..且当前..这个目录项的值是0（说明当前在根目录），则重置当前位置为根目录文件开始簇   
+                // 原因：
+                // 在层层进入path中标注的”内层“目录时，可能会遇到..文件夹，这种情况其实不是进入内层，而是退回外层；
+                // 而这个特殊情况还有一个特别糟糕的子情况——目录项指向..文件，指向的是根目录，这时向其目录项获取地址会直接返回0，而不是根目录的实际地址（这是因为不同的设备上根目录或许不同）。               
+                if ((memcmp(dir_item->DIR_Name, DOT_DOT_FILE_NAME, SFN_LEN) == 0) && (file_start_cluster == 0)) {
                     file_start_cluster = xfat->root_cluster;
                 }
             }
@@ -561,8 +584,8 @@ xfat_err_t xfile_open(xfat_t * xfat, xfile_t * file, const char * path) {
     // 检查开头的分隔符\\、/
 	path = skip_first_path_sep(path);
 
-	// 对.和..的检查——————完全没有对.txt这种情况做处理
-	if (memcmp(path, "..", 2) == 0) {// 根目录不存在上级目录
+	// 检查特殊情况：用户在根目录输入.或..文件（根目录没有这两个文件）——————没有对“/.txt”这种输入做处理，一棍子打死了
+	if (memcmp(path, "..", 2) == 0) {// 根目录不存在上级目录————直接报错
 		return FS_ERR_NONE;
 	} else if (memcmp(path, ".", 1) == 0) {// 若含有.，直接忽略，跳过
 		path++;

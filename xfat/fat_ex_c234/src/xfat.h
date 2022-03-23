@@ -69,9 +69,9 @@ typedef struct _dbr_t {
 #define DIRITEM_NTRES_EXT_LOWER         0x10                // 扩展名小写 (1 << 4) = 00010000
 
 #define DIRITEM_ATTR_READ_ONLY          0x01                // 目录项属性：只读
-#define DIRITEM_ATTR_HIDDEN             0x02                // 目录项属性：隐藏
-#define DIRITEM_ATTR_SYSTEM             0x04                // 目录项属性：系统类型
-#define DIRITEM_ATTR_VOLUME_ID          0x08                // 目录项属性：卷id
+#define DIRITEM_ATTR_HIDDEN             0x02                // 目录项属性：隐藏——这一类支持过滤
+#define DIRITEM_ATTR_SYSTEM             0x04                // 目录项属性：系统类型——这一类支持过滤
+#define DIRITEM_ATTR_VOLUME_ID          0x08                // 目录项属性：卷id——这一类支持过滤
 #define DIRITEM_ATTR_DIRECTORY          0x10                // 目录项属性：目录
 #define DIRITEM_ATTR_ARCHIVE            0x20                // 目录项属性：归档
 #define DIRITEM_ATTR_LONG_NAME          0x0F                // 目录项属性：长文件名
@@ -166,9 +166,9 @@ typedef enum _xfile_type_t {
 #define SFN_LEN                     11              // sfn文件名长
 
 // 这些都是是传递给文件枚举api的参数，表示各类型文件是否显示（也就是不过滤这类文件）
-#define XFILE_LOCATE_NORMAL         (1 << 0)        // 过滤参数，表示显示普通文件
-#define XFILE_LOCATE_DOT            (1 << 1)        // 查找.和..文件
-#define XFILE_LOCATE_VOL            (1 << 2)        // 查找卷标
+#define XFILE_LOCATE_NORMAL         (1 << 0)        // 过滤参数，表示显示普通文件  
+#define XFILE_LOCATE_DOT            (1 << 1)        // 查找.和..文件             
+#define XFILE_LOCATE_VOL            (1 << 2)        // 查找卷标                  
 #define XFILE_LOCALE_SYSTEM         (1 << 3)        // 查找系统文件
 #define XFILE_LOCATE_HIDDEN         (1 << 4)        // 查找隐藏文件
 #define XFILE_LOCATE_ALL            0xFF            // 查找所有
@@ -201,7 +201,7 @@ typedef struct _xfile_t {
     xfat_err_t err;                  // 上一次的操作错误码
 
     u32_t start_cluster;            // 数据区起始簇号
-    u32_t curr_cluster;             // 当前簇号
+    u32_t curr_cluster;             // 当前簇号——————作用不明，可能是表示目录文件当前读取到的位置
 } xfile_t;
 
 xfat_err_t is_cluster_valid(u32_t cluster);
