@@ -596,28 +596,32 @@ xfat_err_t xfile_open(xfat_t * xfat, xfile_t * file, const char * path) {
 
 /**
  * 返回指定目录下的第一个文件信息
- * @param file 已经打开的文件
+ * @param file 已经打开的文件对象，就像一个句柄
  * @param info 第一个文件的文件信息
  * @return
  */
 xfat_err_t xdir_first_file (xfile_t * file, xfileinfo_t * info) {
+    // 思路：
     diritem_t * diritem = (diritem_t *)0;
     xfat_err_t err;
     u32_t moved_bytes = 0;
     u32_t cluster_offset;
 
-    // 仅能用于目录下搜索
+    // 目前只支持对dir文件搜索下层文件，所以这里要判断
     if (file->type != FAT_DIR) {
         return FS_ERR_PARAM;
     }
 
-    // 重新调整搜索位置
+    // 设定搜索位置，从(start_cluster,cluster_offset=0)开始
     file->curr_cluster = file->start_cluster;
-    file->pos = 0;
-
     cluster_offset = 0;
+    
+
+    file->pos = 0;// 传入，让其记录遍历到的位置，并始终指向下一个位置
+    
+    // 传入path参数为空，将会返回第一个查找到的dir；
     err = locate_file_dir_item(file->xfat, XFILE_LOCATE_NORMAL,
-            &file->curr_cluster, &cluster_offset, "", &moved_bytes, &diritem); // moved_bytes用来更新pos（所以pos指的是连续遍历多个簇的偏移之和？？）
+            &file->curr_cluster, &cluster_offset, "", &moved_bytes, &diritem); // moved_bytes用来更新pos（所以pos指的是连续遍历多个簇的偏移之和）
     if (err < 0) {
         return err;
     }
@@ -626,7 +630,7 @@ xfat_err_t xdir_first_file (xfile_t * file, xfileinfo_t * info) {
         return FS_ERR_EOF;
     }
 
-    // 更新pos
+    // 更新pos，作用不明，可能是findnext要用！！————————————
     file->pos += moved_bytes;
 
     // 找到后，拷贝文件信息
@@ -636,13 +640,15 @@ xfat_err_t xdir_first_file (xfile_t * file, xfileinfo_t * info) {
 
 /**
  * 返回指定目录接下来的文件（用于文件遍历)
- * 原理：在当前file所指的目录中，从file中存储的(xfat, pos)所指向的位置开始，向后阅读这个目录文件，得到下一个文件的记录。
- * 特殊情况：1如果接下来没有文件了则返回FS_ERR_EOF；2如果传入的file不是目录文件，返回FS_ERR_PARAM；
+ * 特殊情况：1如果接下来没有文件了，则返回FS_ERR_EOF；2如果传入的file不是目录文件，返回FS_ERR_PARAM；
  * @param file 已经打开的目录
  * @param info 获得的文件信息
  * @return
  */
 xfat_err_t xdir_next_file (xfile_t * file, xfileinfo_t * info) {
+    // 原理：在当前file所指的目录中，从file中存储的(xfat, pos)所指向的位置开始，向后阅读这个目录文件，得到下一个文件的记录。
+    // 另外还有职责：更新当前file(目录文件)遍历到的位置(curr_cluster,cluster_offset)，让用户如果某个时间想要继续调用本函数，将正确向后遍历
+
     xfat_err_t err;
     diritem_t * dir_item = (diritem_t *)0;
     u32_t moved_bytes = 0;
@@ -654,32 +660,39 @@ xfat_err_t xdir_next_file (xfile_t * file, xfileinfo_t * info) {
     }
 
     // 搜索文件或目录
-    cluster_offset = to_cluster_offset(file->xfat, file->pos);// pos是整个目录文件中的偏移，跨越0~n个簇
+
+    cluster_offset = to_cluster_offset(file->xfat, file->pos);// pos是相对整个文件起始的偏移，跨越0~n个簇
                                                               //（32位无符号数最大表示4GB，在fat32中表示一个文件内的偏移/大小怎么都够了）；
     err = locate_file_dir_item(file->xfat, XFILE_LOCATE_NORMAL,
             &file->curr_cluster, &cluster_offset, "", &moved_bytes, &dir_item);
-    if (err != FS_ERR_OK) {
+    if (err != FS_ERR_OK) { // 没有找到、以及异常，都会在这里捕获
         return err;
     }
 
-    // 接下来没有文件了
+    // 接下来没有文件了，这句我感觉没用，上面会捕获eof异常
     if (dir_item == (diritem_t *)0) {
         return FS_ERR_EOF;
     }
 
-    // 更新pos
-    file->pos += moved_bytes;
-
-    // 根据上面返回的cluster_offset更新下一次遍历开始位置（curr_cluster，cluster_offset），
+    // 找到文件
+   
+    // 拷贝文件信息
+    copy_file_info(info, dir_item);
+    
+    // 更新下一次调用时(如果用户继续对当前file调用xdir_next_file的话)所使用的开始位置(curr_cluster,cluster_offset)
+    
+    // 1.更新curr_cluster，
     // 这里做的事情是检查是否要更新簇：如果再向后读取一目录项就越出当前簇了，则前往下一个簇
-    if (cluster_offset + sizeof(diritem_t) >= file->xfat->cluster_byte_size) { 
+    if (cluster_offset + sizeof(diritem_t) >= file->xfat->cluster_byte_size) {
         err = get_next_cluster(file->xfat, file->curr_cluster, &file->curr_cluster);
         if (err < 0) {
             return err;
         }
     }
 
-    copy_file_info(info, dir_item);
+    // 2.更新cluster_offset，也就是更新pos（始终指向下一个目录项，我觉得不如干脆叫next_pos）
+    file->pos += moved_bytes;
+    
     return err;
 }
 

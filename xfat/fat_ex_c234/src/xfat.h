@@ -138,7 +138,7 @@ typedef struct _xfat_t {
     u32_t cluster_byte_size;            // 每簇字节数
     u32_t total_sectors;                // 总扇区数
 
-    u8_t * fat_buffer;             // FAT表项缓冲
+    u8_t * fat_buffer;                  // FAT表项缓冲
     xdisk_part_t * disk_part;           // 对应的分区信息
 } xfat_t;
 
