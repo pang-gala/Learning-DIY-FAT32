@@ -630,7 +630,7 @@ xfat_err_t xdir_first_file (xfile_t * file, xfileinfo_t * info) {
         return FS_ERR_EOF;
     }
 
-    // 更新pos，作用不明，可能是findnext要用！！————————————
+    // 更新pos
     file->pos += moved_bytes;
 
     // 找到后，拷贝文件信息
@@ -680,7 +680,6 @@ xfat_err_t xdir_next_file (xfile_t * file, xfileinfo_t * info) {
     copy_file_info(info, dir_item);
     
     // 更新下一次调用时(如果用户继续对当前file调用xdir_next_file的话)所使用的开始位置(curr_cluster,cluster_offset)
-    
     // 1.更新curr_cluster，
     // 这里做的事情是检查是否要更新簇：如果再向后读取一目录项就越出当前簇了，则前往下一个簇
     if (cluster_offset + sizeof(diritem_t) >= file->xfat->cluster_byte_size) {
