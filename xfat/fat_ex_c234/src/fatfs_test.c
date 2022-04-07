@@ -280,21 +280,22 @@ void show_file_info(xfileinfo_t * fileinfo) { // _xfileinfo_t类型见上面的参考
     printf("\n");
 }
 
+// 模拟用户的使用，首先xfile_open打开一个目录(我测试用read这个目录，有很多文件)，然后xdir_first_file，xdir_next_file...遍历出当前目录中的所有文件，用show_file_info打印；
 int dir_trans_test(void) {
-    xfile_t top_dir;
+    xfile_t target_dir;
     xfileinfo_t fileinfo;
     int err;
 
     printf("\ntrans dir test!\n");
 
     // 从xfat所在分区的根目录下开始遍历，搜寻用户输入的路径
-    err = xfile_open(&xfat, &top_dir, "/read/../modify/"); // "/read/.."、"/modify/.."
+    err = xfile_open(&xfat, &target_dir, "/open/../read/"); // "/read/.."、"/modify/.."
     if (err < 0) {
         printf("open directory failed!\n");
         return -1;
     }
 
-    err = xdir_first_file(&top_dir, &fileinfo);
+    err = xdir_first_file(&target_dir, &fileinfo);
     if (err < 0) {
         printf("get file info failed!\n");
         return -1;
@@ -302,7 +303,7 @@ int dir_trans_test(void) {
     show_file_info(&fileinfo);
 
     // 遍历的方式：当err == 0时可以继续遍历
-    while ((err = xdir_next_file(&top_dir, &fileinfo)) == 0) { 
+    while ((err = xdir_next_file(&target_dir, &fileinfo)) == 0) { 
         show_file_info(&fileinfo);
     }
     if (err < 0) {
@@ -310,7 +311,7 @@ int dir_trans_test(void) {
         return -1;
     }
 
-    err = xfile_close(&top_dir);
+    err = xfile_close(&target_dir);
     if (err < 0) {
         printf("close file failed!\n");
         return -1;

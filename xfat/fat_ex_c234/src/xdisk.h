@@ -74,7 +74,7 @@ typedef struct _xdisk_t {
     xdisk_driver_t * driver;        // 驱动接口
     void * data;                    // 设备自定义参数
 }xdisk_t;
-
+	
 /**
  * 存储设备分区类型
  */
