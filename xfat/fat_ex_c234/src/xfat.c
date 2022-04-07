@@ -21,6 +21,7 @@ extern u8_t temp_buffer[512];      // todo: 缓存优化
 #define to_sector(disk, offset)     ((offset) / (disk)->sector_size)    // 将依稀转换为扇区号
 #define to_sector_offset(disk, offset)   ((offset) % (disk)->sector_size)   // 获取扇区中的相对偏移
 #define to_cluster_offset(xfat, pos)      ((pos) % ((xfat)->cluster_byte_size)) // 获取簇中的相对偏移
+#define to_cluster_number(xfat, pos, cur_cluster)    ()
 
 /**
  * 从dbr中解析出fat相关配置参数
@@ -611,22 +612,22 @@ xfat_err_t xdir_first_file (xfile_t * file, xfileinfo_t * info) {
         return FS_ERR_PARAM;
     }
 
-    // 重新调整搜索位置
+    // 重置搜索位置到开头位置
     file->curr_cluster = file->start_cluster;
     file->pos = 0;
 
     cluster_offset = 0;
     err = locate_file_dir_item(file->xfat, XFILE_LOCATE_NORMAL,
-            &file->curr_cluster, &cluster_offset, "", &moved_bytes, &diritem); // moved_bytes用来更新pos（所以pos指的是连续遍历多个簇的偏移之和？？）
-    if (err < 0) {
+            &file->curr_cluster, &cluster_offset, "", &moved_bytes, &diritem);  // moved_bytes用来更新pos（所以pos指的是连续遍历多个簇的偏移之和？？）
+                                                                                // 此函数将会更新cur_cluster值
+    // 处理可能的错误：
+    // locate_file_dir_item两种可能的错误情况，见其函数说明。
+    if (err < 0 || FS_ERR_EOF == err ) {
         return err;
     }
 
-    if (diritem == (diritem_t *)0) {
-        return FS_ERR_EOF;
-    }
-
-    // 更新pos
+    // 更新pos，之后调用findnext时，将会使用pos得到cluster_offset用于继续向后遍历;  // [注意，pos代表的是簇上的偏移，而不是硬盘上起始簇到当前簇的直线距离，所以不能用pos/sizeofCluster 计算得到cur_cluster]
+                                                                            // [cur_cluster的更新在locate_file_dir_item中完成，因为这个函数会一次查fat表找到目标目录项] 
     file->pos += moved_bytes;
 
     // 找到后，拷贝文件信息
@@ -655,18 +656,17 @@ xfat_err_t xdir_next_file (xfile_t * file, xfileinfo_t * info) {
 
     // 搜索文件或目录
     cluster_offset = to_cluster_offset(file->xfat, file->pos);// pos是整个目录文件中的偏移，跨越0~n个簇
-                                                              //（32位无符号数最大表示4GB，在fat32中表示一个文件内的偏移/大小怎么都够了）；
+                                                              //（32位无符号数最大表示4GB，在fat32中表示一个文件内的偏移/大小足够了，但是为了兼容大型硬盘和一些特殊情况，还是决定全部使用64位数字）；
+    
     err = locate_file_dir_item(file->xfat, XFILE_LOCATE_NORMAL,
             &file->curr_cluster, &cluster_offset, "", &moved_bytes, &dir_item);
-    if (err != FS_ERR_OK) {
+    // 处理可能的错误：
+    // locate_file_dir_item两种可能的错误情况，见其函数说明。
+    if (err < 0 || FS_ERR_EOF == err) {
         return err;
     }
 
-    // 接下来没有文件了
-    if (dir_item == (diritem_t *)0) {
-        return FS_ERR_EOF;
-    }
-
+    // 查找成功，尝试更新file对象的pos和curr_cluster这两个字段；
     // 更新pos
     file->pos += moved_bytes;
 

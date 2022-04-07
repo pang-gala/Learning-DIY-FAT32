@@ -330,39 +330,39 @@ int fs_open_test (void) {
 
     printf("fs_open test...\n");
 
-    err = xfile_open(&xfat, &file, "/read/../modify/");
-    if (err) {
-        printf("open file failed %s!\n", "/");
-        return -1;
-    }
-    xfile_close(&file);
+    //err = xfile_open(&xfat, &file, "/read/../modify/");
+    //if (err) {
+    //    printf("open file failed %s!\n", "/");
+    //    return -1;
+    //}
+    //xfile_close(&file);
 
-   /* err = xfile_open(&xfat, &file, not_exist_path);
-    if (err == 0) {
-        printf("open file ok %s!\n", not_exist_path);
-        return -1;
-    }
+    //err = xfile_open(&xfat, &file, not_exist_path);
+    //if (err == 0) {
+    //    printf("open file ok %s!\n", not_exist_path);
+    //    return -1;
+    //}
 
-    err = xfile_open(&xfat, &file, exist_path);
-    if (err < 0) {
-        printf("open file failed %s!\n", exist_path);
-        return -1;
-    }
-    xfile_close(&file);
+    //err = xfile_open(&xfat, &file, exist_path);
+    //if (err < 0) {
+    //    printf("open file failed %s!\n", exist_path);
+    //    return -1;
+    //}
+    //xfile_close(&file);
 
-    err = xfile_open(&xfat, &file, file1);
-    if (err < 0) {
-        printf("open file failed %s!\n", file1);
-        return -1;
-    }
-    xfile_close(&file);
+    //err = xfile_open(&xfat, &file, file1);
+    //if (err < 0) {
+    //    printf("open file failed %s!\n", file1);
+    //    return -1;
+    //}
+    //xfile_close(&file);
 
     err = xfile_open(&xfat, &file, file2);
     if (err < 0) {
         printf("open file failed %s!\n", file2);
         return -1;
     }
-    xfile_close(&file);*/
+    xfile_close(&file);
 
     printf("file open test ok\n");
     return 0;
@@ -405,8 +405,8 @@ int main (void) {
 //    err = fat_file_test();
 //    if (err) return err;
 
-    //err = fs_open_test();
-    //if (err) return err;
+    err = fs_open_test();
+    if (err) return err;
 
     err = dir_trans_test();
     if (err) return err;
